@@ -22,7 +22,7 @@ type PostProcessProviderState = {
   handleApiFormatChange: (value: PostProcessApiFormat) => void;
   isApiFormatUpdating: boolean;
   apiKey: string;
-  handleApiKeyChange: (value: string) => void;
+  handleApiKeyChange: (value: string) => Promise<void>;
   isApiKeyUpdating: boolean;
   model: string;
   handleModelChange: (value: string) => void;
@@ -148,10 +148,10 @@ export const usePostProcessProviderState = (): PostProcessProviderState => {
   );
 
   const handleApiKeyChange = useCallback(
-    (value: string) => {
+    async (value: string) => {
       const trimmed = value.trim();
       if (trimmed !== apiKey) {
-        void updatePostProcessApiKey(selectedProviderId, trimmed);
+        await updatePostProcessApiKey(selectedProviderId, trimmed);
       }
     },
     [apiKey, selectedProviderId, updatePostProcessApiKey],

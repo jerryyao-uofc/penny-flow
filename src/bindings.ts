@@ -1213,7 +1213,7 @@ export type RecordingPhase =
  * The session was cancelled.
  */
 "cancelled"
-export type RecordingRetentionPeriod = "never" | "preserve_limit" | "days_3" | "weeks_2" | "months_3"
+export type RecordingRetentionPeriod = "never" | "preserve_limit" | "hours_5" | "days_3" | "weeks_2" | "months_3"
 export type RecordingStateEvent = { phase: RecordingPhase }
 /**
  * A retired ONNX model found on disk.

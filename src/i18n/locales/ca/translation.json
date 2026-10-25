@@ -22,7 +22,7 @@
     "customModelDescription": "Sense suport oficial",
     "migration": {
       "title": "Cal actualitzar els vostres models",
-      "description": "Handy ara utilitza un tipus de model més nou. Baixeu la versió nova per continuar transcrivint. Les versions antigues s'eliminaran.",
+      "description": "Penny Flow ara utilitza un tipus de model més nou. Baixeu la versió nova per continuar transcrivint. Les versions antigues s'eliminaran.",
       "replaces": "Substitueix {{name}}",
       "oldFormat": "Format antic",
       "failed": "Ha fallat la baixada",
@@ -59,11 +59,11 @@
     "permissions": {
       "microphone": {
         "name": "Micròfon",
-        "why": "Perquè el Handy us pugui sentir. L'àudio es converteix en text en aquest ordinador i no es puja mai enlloc."
+        "why": "Perquè el Penny Flow us pugui sentir. L'àudio es converteix en text en aquest ordinador i no es puja mai enlloc."
       },
       "accessibility": {
         "name": "Accessibilitat",
-        "why": "Perquè la drecera funcioni a totes les aplicacions i el Handy pugui escriure el text on tingueu el cursor."
+        "why": "Perquè la drecera funcioni a totes les aplicacions i el Penny Flow pugui escriure el text on tingueu el cursor."
       },
       "errors": {
         "checkFailed": "No s'han pogut comprovar els permisos. Torneu-ho a provar.",
@@ -77,12 +77,12 @@
       "openSettings": "Obre la configuració",
       "allowed": "Permès",
       "waiting": "En espera",
-      "turnOnMac": "Activeu el Handy a Configuració del Sistema i torneu aquí.",
+      "turnOnMac": "Activeu el Penny Flow a Configuració del Sistema i torneu aquí.",
       "turnOnWindows": "Activeu l'accés al micròfon a Configuració de Windows i torneu aquí.",
       "hintBoth": "Permeteu-los tots dos per continuar",
       "hintMicrophone": "Permeteu el micròfon per continuar",
       "welcomeBack": "Us donem la benvinguda de nou. Continuem on ho havíeu deixat.",
-      "relaunch": "La drecera no respon després d'això? <relaunch>Reinicieu el Handy</relaunch> i tornareu a aparèixer just aquí."
+      "relaunch": "La drecera no respon després d'això? <relaunch>Reinicieu el Penny Flow</relaunch> i tornareu a aparèixer just aquí."
     },
     "shell": {
       "back": "Enrere",
@@ -93,11 +93,11 @@
       "title": "Parleu en lloc d'escriure, a qualsevol aplicació",
       "subtitle": "Trieu les llengües en què dictareu",
       "languagesLabel": "Llengües",
-      "noMatch": "Cap llengua coincideix amb «{{query}}». Els models del Handy cobreixen unes 100 llengües; en trobareu més a la configuració.",
+      "noMatch": "Cap llengua coincideix amb «{{query}}». Els models del Penny Flow cobreixen unes 100 llengües; en trobareu més a la configuració.",
       "appLanguage": "Llengua de l'aplicació",
       "menusIn": "Menús en <b>{{language}}</b>",
       "chinese": {
-        "question": "Parleu {{languages}}. Quins caràcters ha d'escriure el Handy?",
+        "question": "Parleu {{languages}}. Quins caràcters ha d'escriure el Penny Flow?",
         "label": "Caràcters xinesos",
         "zh-Hans": "Simplificat",
         "zh-Hant": "Taiwan",
@@ -167,7 +167,7 @@
     },
     "try": {
       "title": "Proveu-ho!",
-      "subtitle": "El Handy és a la cantonada per guiar-vos",
+      "subtitle": "El Penny Flow és a la cantonada per guiar-vos",
       "noteLabel": "Nota",
       "placeholder": "Nota nova",
       "hold": "Manteniu premut <keys/> i parleu.",
@@ -195,14 +195,14 @@
     },
     "done": {
       "title": "Tot a punt",
-      "subMac": "El Handy ja és a la barra de menús. Manteniu premut o premeu <keys/> a qualsevol aplicació per parlar.",
-      "subTray": "El Handy ja és a la safata del sistema. Manteniu premut o premeu <keys/> a qualsevol aplicació per parlar.",
+      "subMac": "El Penny Flow ja és a la barra de menús. Manteniu premut o premeu <keys/> a qualsevol aplicació per parlar.",
+      "subTray": "El Penny Flow ja és a la safata del sistema. Manteniu premut o premeu <keys/> a qualsevol aplicació per parlar.",
       "hint": "Podeu canviar-ho més tard a la configuració",
       "highFiveLabel": "Xoqueu-la",
-      "atLogin": "Inicia el Handy quan entri a la sessió",
+      "atLogin": "Inicia el Penny Flow quan entri a la sessió",
       "finish": "Fet",
       "panel": {
-        "name": "Handy",
+        "name": "Penny Flow",
         "ready": "A punt",
         "languages": "Llengües",
         "model": "Model de veu",
@@ -327,7 +327,7 @@
     "general": {
       "title": "General",
       "shortcut": {
-        "title": "Dreceres del Handy",
+        "title": "Dreceres del Penny Flow",
         "description": "Configura les dreceres de teclat per iniciar l'enregistrament de veu per a la transcripció",
         "loading": "S'estan carregant les dreceres...",
         "none": "No hi ha cap drecera configurada",
@@ -360,7 +360,7 @@
       },
       "preferredLanguages": {
         "title": "Llengües preferides",
-        "description": "Les llengües que parleu. El Handy les utilitza per recomanar models.",
+        "description": "Les llengües que parleu. El Penny Flow les utilitza per recomanar models.",
         "noMatch": "Cap llengua coincideix amb «{{query}}»",
         "weak": "Cap model reconeix bé {{languages}} encara."
       },
@@ -387,17 +387,17 @@
         "fits": "Per a les vostres llengües",
         "untested": "Sense provar"
       },
-      "untestedNote": "No s'han provat amb el Handy. Poden ser més lents o cometre més errors.",
+      "untestedNote": "No s'han provat amb el Penny Flow. Poden ser més lents o cometre més errors.",
       "untestedHidden_one": "{{count}} model més no està ajustat per al dictat. Cerqueu-lo per trobar-lo.",
       "untestedHidden_other": "{{count}} models més no estan ajustats per al dictat. Cerqueu per trobar-ne algun.",
-      "emptyYours": "Encara no hi ha models. Trieu-ne un a sota: es baixa i el Handy l'utilitza.",
+      "emptyYours": "Encara no hi ha models. Trieu-ne un a sota: es baixa i el Penny Flow l'utilitza.",
       "showMore": "Mostra'n {{count}} més",
       "showFewer": "Mostra'n menys",
       "download": "Baixa i utilitza",
       "downloadingThenUse": "{{percent}} % de {{total}}, i després canvia",
       "loading": "S'està carregant…",
       "deleteAsk": "Voleu suprimir {{name}}? S'alliberen {{size}}.",
-      "deleteAskActive": "Voleu suprimir {{name}}? El Handy no podrà transcriure fins que en trieu un altre.",
+      "deleteAskActive": "Voleu suprimir {{name}}? El Penny Flow no podrà transcriure fins que en trieu un altre.",
       "cancel": "Cancel·la",
       "deleteModel": "Suprimeix {{name}}",
       "cancelDownload": "Atura la baixada de {{name}}",
@@ -411,7 +411,7 @@
         "marks": "? encara no s'ha mesurat. — no entén aquesta llengua."
       },
       "retiredNotice": {
-        "title": "Els models antics ja no funcionen amb Handy",
+        "title": "Els models antics ja no funcionen amb Penny Flow",
         "description": "Ocupen {{size}} a l'ordinador.",
         "delete": "Suprimeix els models",
         "deleted": "S'han suprimit els models antics",
@@ -419,7 +419,7 @@
       },
       "rescan": {
         "label": "Torna a cercar",
-        "tooltip": "Torna a cercar models afegits a la carpeta de models o a la memòria cau de Hugging Face des de fora del Handy"
+        "tooltip": "Torna a cercar models afegits a la carpeta de models o a la memòria cau de Hugging Face des de fora del Penny Flow"
       }
     },
     "languages": {
@@ -485,11 +485,11 @@
       },
       "autostart": {
         "label": "Inicia en entrar a la sessió",
-        "description": "Inicia automàticament el Handy quan entreu a la sessió de l'ordinador."
+        "description": "Inicia automàticament el Penny Flow quan entreu a la sessió de l'ordinador."
       },
       "showTrayIcon": {
         "label": "Mostra la icona a la safata",
-        "description": "Mostra la icona del Handy a la safata del sistema."
+        "description": "Mostra la icona del Penny Flow a la safata del sistema."
       },
       "overlay": {
         "style": {
@@ -720,7 +720,7 @@
       },
       "updateChecks": {
         "label": "Comproveu si hi ha actualitzacions",
-        "description": "Comprova automàticament si hi ha versions noves del Handy",
+        "description": "Comprova automàticament si hi ha versions noves del Penny Flow",
         "lockedDescription": "Desactivat per la configuració del sistema (HANDY_DISABLE_UPDATER)"
       },
       "whatsNewPreview": {
@@ -825,7 +825,7 @@
       },
       "keyboardDiagnostic": {
         "title": "Diagnòstic del teclat",
-        "description": "Comprova si els esdeveniments del teclat arriben al Handy. Només se'n registra el recompte, mai les tecles que premeu.",
+        "description": "Comprova si els esdeveniments del teclat arriben al Penny Flow. Només se'n registra el recompte, mai les tecles que premeu.",
         "run": "Executa un diagnòstic de 10 s",
         "running": "S'està escoltant… prema la drecera unes quantes vegades (p. ex., Option+Space)",
         "secureInputLabel": "Entrada segura",
@@ -839,7 +839,7 @@
         "mouse": "Ratolí",
         "verdictBlocked": "L'entrada segura bloca els esdeveniments de tecla. Les dreceres amb tecles no poden funcionar fins que es resolgui.",
         "verdictSuspicious": "Han arribat esdeveniments de modificadors, però no de tecles. Alguna cosa suprimeix les tecles tot i que l'entrada segura consta com a desactivada. Informeu-ne al GitHub.",
-        "verdictOk": "Els esdeveniments de tecla arriben al Handy amb normalitat.",
+        "verdictOk": "Els esdeveniments de tecla arriben al Penny Flow amb normalitat.",
         "verdictNoEvents": "No s'ha capturat cap esdeveniment. Heu premut alguna tecla durant la prova?",
         "failed": "El diagnòstic ha fallat: {{error}}"
       }
@@ -848,15 +848,15 @@
       "title": "Quant a",
       "version": {
         "title": "Versió",
-        "description": "Versió actual del Handy"
+        "description": "Versió actual del Penny Flow"
       },
       "whatsNewUpdates": {
         "label": "Mostra les novetats",
-        "description": "Mostra les notes de la versió després d'actualitzar el Handy"
+        "description": "Mostra les notes de la versió després d'actualitzar el Penny Flow"
       },
       "appDataDirectory": {
         "title": "Directori de dades de l'aplicació",
-        "description": "Ubicació on el Handy desa les dades"
+        "description": "Ubicació on el Penny Flow desa les dades"
       },
       "sourceCode": {
         "title": "Codi font",
@@ -865,7 +865,7 @@
       },
       "supportDevelopment": {
         "title": "Dona suport al desenvolupament",
-        "description": "Ajudeu-nos a continuar desenvolupant el Handy",
+        "description": "Ajudeu-nos a continuar desenvolupant el Penny Flow",
         "button": "Feu una donació"
       },
       "acknowledgments": {
@@ -873,7 +873,7 @@
         "ggml": {
           "title": "ggml",
           "description": "Biblioteca de tensors d'alt rendiment per a la inferència d'aprenentatge automàtic al dispositiu",
-          "details": "La transcripció local de veu a text del Handy es basa en el transcribe.cpp i el ggml. Gràcies a la gran feina de Georgi Gerganov i dels col·laboradors."
+          "details": "La transcripció local de veu a text del Penny Flow es basa en el transcribe.cpp i el ggml. Gràcies a la gran feina de Georgi Gerganov i dels col·laboradors."
         }
       }
     }
@@ -894,7 +894,7 @@
     "portableUpdateBrowseButton": "Obriu GitHub Releases"
   },
   "whatsNew": {
-    "title": "Novetats del Handy v{{version}}"
+    "title": "Novetats del Penny Flow v{{version}}"
   },
   "common": {
     "loading": "S'està carregant...",
@@ -925,11 +925,11 @@
   },
   "appLanguage": {
     "title": "Llengua de l'aplicació",
-    "description": "Canvia la llengua de la interfície del Handy"
+    "description": "Canvia la llengua de la interfície del Penny Flow"
   },
   "theme": {
     "title": "Tema de l'aplicació",
-    "description": "Tria si el Handy segueix el tema del sistema o es manté en mode clar o fosc",
+    "description": "Tria si el Penny Flow segueix el tema del sistema o es manté en mode clar o fosc",
     "options": {
       "system": "Sistema",
       "light": "Clar",

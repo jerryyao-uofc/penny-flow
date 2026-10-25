@@ -122,7 +122,7 @@ const PostProcessingSettingsApiComponent: React.FC = () => {
             <div className="flex items-center gap-2">
               <ApiKeyField
                 value={state.apiKey}
-                onBlur={state.handleApiKeyChange}
+                onSave={state.handleApiKeyChange}
                 placeholder={t(
                   "settings.postProcessing.api.apiKey.placeholder",
                 )}

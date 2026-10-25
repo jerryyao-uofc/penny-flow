@@ -33,7 +33,7 @@ export const OnboardingShell: React.FC<OnboardingShellProps> = ({
       data-onboarding=""
       className="h-screen w-full flex overflow-hidden bg-background select-none cursor-default"
     >
-      {/* Disabled buttons go neutral so the only pink one is the next step.
+      {/* Disabled buttons go neutral so the only filled one is the next step.
           The column is capped so a long row truncates instead of widening. */}
       <div className="relative m-auto grid h-[600px] w-[720px] shrink-0 grid-cols-[minmax(0,1fr)] grid-rows-[48px_1fr_76px] font-ui text-body leading-[1.6] text-text antialiased [&_button:disabled]:border-line [&_button:disabled]:bg-wash [&_button:disabled]:text-ink-3 [&_button:disabled]:opacity-100">
         <div className="relative flex items-center justify-between ps-[28px] pe-[20px]">

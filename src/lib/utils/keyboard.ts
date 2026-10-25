@@ -181,6 +181,8 @@ const capitalizeKey = (key: string): string => {
   if (key === "fn") return "fn";
   // Function keys: f1 -> F1
   if (/^f\d+$/.test(key)) return key.toUpperCase();
+  // The MacBook key printed `~` is stored as a backtick.
+  if (key === "`") return "~";
   // Single char: a -> A
   if (key.length === 1) return key.toUpperCase();
   if (COMPOUND_KEY_DISPLAY[key]) return COMPOUND_KEY_DISPLAY[key];

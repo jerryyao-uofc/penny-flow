@@ -5,7 +5,7 @@
   /* Near-opaque app surface (theme.css --color-background at 98%). Auto-flips
      light/dark with --color-background, so no dark-mode override is needed. */
   --s-surface: color-mix(in srgb, var(--color-background) 98%, transparent);
-  /* Accent = logo pink; flips automatically via --color-logo-primary. */
+  /* Accent follows --color-logo-primary. */
   --s-accent: var(--color-logo-primary);
   /* The rest come from theme.css, which already follows the theme setting. */
   --s-accent-soft: color-mix(
@@ -246,6 +246,41 @@
   padding-left: 5px;
   align-items: center;
   justify-self: start;
+}
+
+/* Test line under the working pill: DeepSeek was called, and what came back. */
+.sdeepseek {
+  height: 22px;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 10px;
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  color: #111111;
+  background: #c8f54a;
+}
+.sdeepseek.failed {
+  color: #f5f5f5;
+  background: #111111;
+}
+.sdeepseek i {
+  width: 6px;
+  height: 6px;
+  border-radius: 99px;
+  background: currentColor;
+  flex: none;
+}
+.sdeepseek.calling i {
+  animation: sdeepseek-pulse 0.8s ease-in-out infinite;
+}
+@keyframes sdeepseek-pulse {
+  50% {
+    opacity: 0.25;
+  }
 }
 .sbase-r {
   display: flex;

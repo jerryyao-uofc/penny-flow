@@ -22,7 +22,7 @@
     "customModelDescription": "公式サポート対象外",
     "migration": {
       "title": "モデルの更新が必要です",
-      "description": "Handy は新しい種類のモデルを使用するようになりました。文字起こしを続けるには、新しいバージョンをダウンロードしてください。古いバージョンは削除されます。",
+      "description": "Penny Flow は新しい種類のモデルを使用するようになりました。文字起こしを続けるには、新しいバージョンをダウンロードしてください。古いバージョンは削除されます。",
       "replaces": "{{name}} の後継",
       "oldFormat": "旧形式",
       "failed": "ダウンロードに失敗しました",
@@ -59,11 +59,11 @@
     "permissions": {
       "microphone": {
         "name": "マイク",
-        "why": "Handy があなたの声を聞くために必要です。音声はこのコンピューター上でテキストに変換され、アップロードされることはありません。"
+        "why": "Penny Flow があなたの声を聞くために必要です。音声はこのコンピューター上でテキストに変換され、アップロードされることはありません。"
       },
       "accessibility": {
         "name": "アクセシビリティ",
-        "why": "どのアプリでもショートカットが使え、Handy がカーソル位置にテキストを入力できるようにします。"
+        "why": "どのアプリでもショートカットが使え、Penny Flow がカーソル位置にテキストを入力できるようにします。"
       },
       "errors": {
         "checkFailed": "権限の確認に失敗しました。もう一度お試しください。",
@@ -77,12 +77,12 @@
       "openSettings": "設定を開く",
       "allowed": "許可済み",
       "waiting": "待機中",
-      "turnOnMac": "システム設定で Handy をオンにして、ここに戻ってください。",
+      "turnOnMac": "システム設定で Penny Flow をオンにして、ここに戻ってください。",
       "turnOnWindows": "Windows の設定でマイクへのアクセスをオンにして、ここに戻ってください。",
       "hintBoth": "続けるには両方を許可してください",
       "hintMicrophone": "続けるにはマイクを許可してください",
       "welcomeBack": "おかえりなさい。前回の続きから始めます。",
-      "relaunch": "このあとショートカットが反応しない場合は、<relaunch>Handy を再起動</relaunch>してください。この画面にすぐ戻れます。"
+      "relaunch": "このあとショートカットが反応しない場合は、<relaunch>Penny Flow を再起動</relaunch>してください。この画面にすぐ戻れます。"
     },
     "shell": {
       "back": "戻る",
@@ -93,11 +93,11 @@
       "title": "どのアプリでも、入力のかわりに話すだけ",
       "subtitle": "音声入力で使う言語を選んでください",
       "languagesLabel": "言語",
-      "noMatch": "「{{query}}」に一致する言語はありません。Handy のモデルは約100言語に対応しており、ほかの言語は設定から選べます。",
+      "noMatch": "「{{query}}」に一致する言語はありません。Penny Flow のモデルは約100言語に対応しており、ほかの言語は設定から選べます。",
       "appLanguage": "アプリの言語",
       "menusIn": "メニューは<b>{{language}}</b>で表示",
       "chinese": {
-        "question": "{{languages}}を話しますね。Handy にはどの文字で書かせますか?",
+        "question": "{{languages}}を話しますね。Penny Flow にはどの文字で書かせますか?",
         "label": "中国語の文字",
         "zh-Hans": "簡体字",
         "zh-Hant": "台湾",
@@ -167,7 +167,7 @@
     },
     "try": {
       "title": "さっそく試してみよう!",
-      "subtitle": "画面の隅から Handy が案内します",
+      "subtitle": "画面の隅から Penny Flow が案内します",
       "noteLabel": "メモ",
       "placeholder": "新規メモ",
       "hold": "<keys/> を押したまま話してください。",
@@ -195,14 +195,14 @@
     },
     "done": {
       "title": "準備完了です",
-      "subMac": "Handy はメニューバーにいます。どのアプリでも <keys/> を押したまま、またはタップして話してください。",
-      "subTray": "Handy はシステムトレイにいます。どのアプリでも <keys/> を押したまま、またはタップして話してください。",
+      "subMac": "Penny Flow はメニューバーにいます。どのアプリでも <keys/> を押したまま、またはタップして話してください。",
+      "subTray": "Penny Flow はシステムトレイにいます。どのアプリでも <keys/> を押したまま、またはタップして話してください。",
       "hint": "これらは後から設定で変更できます",
       "highFiveLabel": "ハイタッチ",
-      "atLogin": "ログイン時に Handy を起動する",
+      "atLogin": "ログイン時に Penny Flow を起動する",
       "finish": "完了",
       "panel": {
-        "name": "Handy",
+        "name": "Penny Flow",
         "ready": "準備完了",
         "languages": "言語",
         "model": "音声モデル",
@@ -327,7 +327,7 @@
     "general": {
       "title": "一般",
       "shortcut": {
-        "title": "Handy ショートカット",
+        "title": "Penny Flow ショートカット",
         "description": "音声録音を開始するキーボードショートカットを設定",
         "loading": "ショートカットを読み込み中…",
         "none": "ショートカットが設定されていません",
@@ -360,7 +360,7 @@
       },
       "preferredLanguages": {
         "title": "使用する言語",
-        "description": "あなたが話す言語です。Handy はこれをもとにモデルをおすすめします。",
+        "description": "あなたが話す言語です。Penny Flow はこれをもとにモデルをおすすめします。",
         "noMatch": "「{{query}}」に一致する言語はありません",
         "weak": "{{languages}}をうまく認識できるモデルはまだありません。"
       },
@@ -387,17 +387,17 @@
         "fits": "選んだ言語向け",
         "untested": "未テスト"
       },
-      "untestedNote": "Handy ではテストされていません。速度が遅かったり、間違いが多かったりする可能性があります。",
+      "untestedNote": "Penny Flow ではテストされていません。速度が遅かったり、間違いが多かったりする可能性があります。",
       "untestedHidden_one": "音声入力向けに調整されていないモデルがあと {{count}} 個あります。検索で見つけられます。",
       "untestedHidden_other": "音声入力向けに調整されていないモデルがあと {{count}} 個あります。検索で見つけられます。",
-      "emptyYours": "モデルはまだありません。下から選ぶとダウンロードされ、Handy が使用します。",
+      "emptyYours": "モデルはまだありません。下から選ぶとダウンロードされ、Penny Flow が使用します。",
       "showMore": "さらに {{count}} 個を表示",
       "showFewer": "表示を減らす",
       "download": "ダウンロードして使用",
       "downloadingThenUse": "{{total}} のうち {{percent}}%、完了後に切り替え",
       "loading": "読み込み中…",
       "deleteAsk": "{{name}} を削除しますか? {{size}} の空き容量が増えます。",
-      "deleteAskActive": "{{name}} を削除しますか? ほかのモデルを選ぶまで、Handy は文字起こしできません。",
+      "deleteAskActive": "{{name}} を削除しますか? ほかのモデルを選ぶまで、Penny Flow は文字起こしできません。",
       "cancel": "キャンセル",
       "deleteModel": "{{name}} を削除",
       "cancelDownload": "{{name}} のダウンロードを中止",
@@ -411,7 +411,7 @@
         "marks": "? はまだ測定されていません。— はその言語を聞き取れません。"
       },
       "retiredNotice": {
-        "title": "古いモデルは Handy で使用できなくなりました",
+        "title": "古いモデルは Penny Flow で使用できなくなりました",
         "description": "コンピューター上で {{size}} を使用しています。",
         "delete": "モデルを削除",
         "deleted": "古いモデルを削除しました",
@@ -419,7 +419,7 @@
       },
       "rescan": {
         "label": "再スキャン",
-        "tooltip": "Handy を使わずに models フォルダーまたは Hugging Face キャッシュに追加されたモデルを再スキャンします"
+        "tooltip": "Penny Flow を使わずに models フォルダーまたは Hugging Face キャッシュに追加されたモデルを再スキャンします"
       }
     },
     "languages": {
@@ -485,11 +485,11 @@
       },
       "autostart": {
         "label": "起動時に実行",
-        "description": "コンピューターにログインしたときに Handy を自動的に起動。"
+        "description": "コンピューターにログインしたときに Penny Flow を自動的に起動。"
       },
       "showTrayIcon": {
         "label": "トレイアイコンを表示",
-        "description": "システムトレイに Handy のアイコンを表示します。"
+        "description": "システムトレイに Penny Flow のアイコンを表示します。"
       },
       "overlay": {
         "style": {
@@ -720,7 +720,7 @@
       },
       "updateChecks": {
         "label": "アップデートを確認",
-        "description": "Handy の新しいバージョンを自動的にチェック",
+        "description": "Penny Flow の新しいバージョンを自動的にチェック",
         "lockedDescription": "システム設定により無効化されています (HANDY_DISABLE_UPDATER)"
       },
       "whatsNewPreview": {
@@ -825,7 +825,7 @@
       },
       "keyboardDiagnostic": {
         "title": "キーボード診断",
-        "description": "キーボードイベントが Handy に届いているかを確認します。記録されるのはイベント数のみで、押したキーの内容は記録されません。",
+        "description": "キーボードイベントが Penny Flow に届いているかを確認します。記録されるのはイベント数のみで、押したキーの内容は記録されません。",
         "run": "10 秒間の診断を実行",
         "running": "待機中… ショートカットを数回押してください (例: Option+Space)",
         "secureInputLabel": "Secure Input",
@@ -839,7 +839,7 @@
         "mouse": "マウス",
         "verdictBlocked": "Secure Input がキーイベントをブロックしています。解消されるまで、通常キーを含むショートカットは動作しません。",
         "verdictSuspicious": "修飾キーのイベントは届いていますが、キーイベントは届いていません。Secure Input は無効と報告されているのに、何かがキーを抑制しています。GitHub で報告してください。",
-        "verdictOk": "キーイベントは Handy に正常に届いています。",
+        "verdictOk": "キーイベントは Penny Flow に正常に届いています。",
         "verdictNoEvents": "イベントを検出できませんでした。テスト中にキーを押しましたか？",
         "failed": "診断に失敗しました: {{error}}"
       }
@@ -848,15 +848,15 @@
       "title": "概要",
       "version": {
         "title": "バージョン",
-        "description": "Handy の現在のバージョン"
+        "description": "Penny Flow の現在のバージョン"
       },
       "whatsNewUpdates": {
         "label": "新機能を表示",
-        "description": "Handy のアップデート後にリリースノートを表示"
+        "description": "Penny Flow のアップデート後にリリースノートを表示"
       },
       "appDataDirectory": {
         "title": "アプリデータディレクトリ",
-        "description": "Handy がデータを保存する場所"
+        "description": "Penny Flow がデータを保存する場所"
       },
       "sourceCode": {
         "title": "ソースコード",
@@ -865,7 +865,7 @@
       },
       "supportDevelopment": {
         "title": "開発を支援",
-        "description": "Handy の開発を支援してください",
+        "description": "Penny Flow の開発を支援してください",
         "button": "寄付する"
       },
       "acknowledgments": {
@@ -873,7 +873,7 @@
         "ggml": {
           "title": "ggml",
           "description": "オンデバイス機械学習推論のための高性能テンソルライブラリ",
-          "details": "Handy のローカルの音声からテキストへの文字起こしは transcribe.cpp と ggml を基盤としています。Georgi Gerganov 氏と貢献者の皆様の素晴らしい仕事に感謝します。"
+          "details": "Penny Flow のローカルの音声からテキストへの文字起こしは transcribe.cpp と ggml を基盤としています。Georgi Gerganov 氏と貢献者の皆様の素晴らしい仕事に感謝します。"
         }
       }
     }
@@ -894,7 +894,7 @@
     "portableUpdateBrowseButton": "GitHub Releases を開く"
   },
   "whatsNew": {
-    "title": "Handy v{{version}} の新機能"
+    "title": "Penny Flow v{{version}} の新機能"
   },
   "common": {
     "loading": "読み込み中…",
@@ -925,11 +925,11 @@
   },
   "appLanguage": {
     "title": "アプリの言語",
-    "description": "Handy インターフェースの言語を変更"
+    "description": "Penny Flow インターフェースの言語を変更"
   },
   "theme": {
     "title": "アプリのテーマ",
-    "description": "Handy をシステムのテーマに合わせるか、ライトまたはダークで固定するかを選択します",
+    "description": "Penny Flow をシステムのテーマに合わせるか、ライトまたはダークで固定するかを選択します",
     "options": {
       "system": "システム",
       "light": "ライト",

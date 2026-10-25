@@ -47,11 +47,23 @@ tauri_panel! {
 // width from 172 (--ov-rest-w) to 216 (--ov-work-w) and expands from center, so
 // the window must fit the widest state plus a little slack.
 const OVERLAY_WIDTH: f64 = 256.0;
-const OVERLAY_HEIGHT: f64 = 50.0;
+// Extra height under the pill for the DeepSeek test line.
+const OVERLAY_HEIGHT: f64 = 78.0;
 
-// Actual is 394x118, just a little extra
+/// Small glass mark above the transcription banner. Hidden while that banner
+/// is on screen.
+const PRESENCE_WIDTH: f64 = 64.0;
+const PRESENCE_HEIGHT: f64 = 10.0;
+const PRESENCE_GAP: f64 = 6.0;
+/// Nudges the capsule down from the first placement, closer to the banner.
+const PRESENCE_DROP: f64 = 28.0;
+/// Visible compact pill. The overlay window is taller than the pill, and the
+/// extra space is transparent, so the mark uses the pill height while idle.
+const PRESENCE_PILL_HEIGHT: f64 = 42.0;
+
+// Actual is 394x118, plus room for the DeepSeek test line.
 const OVERLAY_STREAM_WIDTH: f64 = 400.0;
-const OVERLAY_STREAM_HEIGHT: f64 = 120.0;
+const OVERLAY_STREAM_HEIGHT: f64 = 148.0;
 
 /// Overlay window size (logical) for a given UI state.
 fn overlay_dimensions(state: &str) -> (f64, f64) {
@@ -485,6 +497,144 @@ pub fn create_recording_overlay(app_handle: &AppHandle) {
     }
 }
 
+fn presence_monitor(app_handle: &AppHandle) -> Option<tauri::Monitor> {
+    get_monitor_with_cursor(app_handle).or_else(|| app_handle.primary_monitor().ok().flatten())
+}
+
+fn recording_overlay_is_showing(app_handle: &AppHandle) -> bool {
+    app_handle
+        .get_webview_window("recording_overlay")
+        .and_then(|window| window.is_visible().ok())
+        .unwrap_or(false)
+}
+
+/// Logical position of the idle glass mark, centered on the banner's monitor
+/// and sitting just above that banner.
+fn calculate_presence_position(app_handle: &AppHandle, banner_span: f64) -> Option<(f64, f64)> {
+    let monitor = presence_monitor(app_handle)?;
+    let scale = monitor.scale_factor();
+    let monitor_x = monitor.position().x as f64 / scale;
+    let monitor_y = monitor.position().y as f64 / scale;
+    let monitor_width = monitor.size().width as f64 / scale;
+    let x = monitor_x + (monitor_width - PRESENCE_WIDTH) / 2.0;
+    let y = match settings::get_settings(app_handle).overlay_position {
+        OverlayPosition::Top => {
+            let above = monitor_y + OVERLAY_TOP_OFFSET - PRESENCE_GAP - PRESENCE_HEIGHT;
+            if above >= monitor_y {
+                above + PRESENCE_DROP
+            } else {
+                monitor_y + OVERLAY_TOP_OFFSET + banner_span + PRESENCE_GAP + PRESENCE_DROP
+            }
+        }
+        OverlayPosition::Bottom => {
+            #[cfg(target_os = "macos")]
+            let bottom = {
+                let work_area = monitor.work_area();
+                (work_area.position.y as f64 + work_area.size.height as f64) / scale
+            };
+            #[cfg(not(target_os = "macos"))]
+            let bottom = monitor_y + monitor.size().height as f64 / scale;
+            bottom - OVERLAY_BOTTOM_OFFSET - banner_span - PRESENCE_GAP - PRESENCE_HEIGHT
+                + PRESENCE_DROP
+        }
+    };
+    Some((x, y))
+}
+
+fn place_presence_mark_on_main(app_handle: &AppHandle) {
+    let Some(window) = app_handle.get_webview_window("presence_mark") else {
+        return;
+    };
+    // The transcription banner replaces the idle mark for the whole session.
+    if recording_overlay_is_showing(app_handle) {
+        let _ = window.hide();
+        return;
+    }
+    if let Some((x, y)) = calculate_presence_position(app_handle, PRESENCE_PILL_HEIGHT) {
+        let _ = window.set_position(tauri::Position::Logical(tauri::LogicalPosition { x, y }));
+        let _ = window.show();
+    }
+}
+
+fn finish_presence_window(window: &tauri::webview::WebviewWindow) {
+    place_presence_mark_on_main(window.app_handle());
+}
+
+/// Flat bar above the transcription banner. Stays visible for the whole run.
+#[cfg(not(target_os = "macos"))]
+pub fn create_presence_mark(app_handle: &AppHandle) {
+    let mut builder = WebviewWindowBuilder::new(
+        app_handle,
+        "presence_mark",
+        tauri::WebviewUrl::App("src/overlay/index.html".into()),
+    )
+    .title("Penny Flow")
+    .resizable(false)
+    .inner_size(PRESENCE_WIDTH, PRESENCE_HEIGHT)
+    .shadow(false)
+    .maximizable(false)
+    .minimizable(false)
+    .closable(false)
+    .decorations(false)
+    .always_on_top(true)
+    .skip_taskbar(true)
+    .transparent(true)
+    .focusable(false)
+    .focused(false)
+    .visible(true);
+
+    if let Some(data_dir) = crate::portable::data_dir() {
+        builder = builder.data_directory(data_dir.join("webview"));
+    }
+
+    match builder.build() {
+        Ok(window) => finish_presence_window(&window),
+        Err(e) => log::error!("Failed to create presence mark: {e}"),
+    }
+}
+
+/// Flat bar above the transcription banner. Stays visible for the whole run.
+#[cfg(target_os = "macos")]
+pub fn create_presence_mark(app_handle: &AppHandle) {
+    let (x, y) = calculate_presence_position(app_handle, PRESENCE_PILL_HEIGHT).unwrap_or((0.0, 0.0));
+    match PanelBuilder::<_, RecordingOverlayPanel>::new(app_handle, "presence_mark")
+        .url(WebviewUrl::App("src/overlay/index.html".into()))
+        .title("Penny Flow")
+        .position(tauri::Position::Logical(tauri::LogicalPosition { x, y }))
+        .level(PanelLevel::PopUpMenu)
+        .size(tauri::Size::Logical(tauri::LogicalSize {
+            width: PRESENCE_WIDTH,
+            height: PRESENCE_HEIGHT,
+        }))
+        .has_shadow(false)
+        .transparent(true)
+        .no_activate(true)
+        .corner_radius(5.0)
+        .style_mask(StyleMask::empty().borderless().nonactivating_panel())
+        .with_window(|w| {
+            w.decorations(false).transparent(true).focusable(false).effects(
+                tauri::window::EffectsBuilder::new()
+                    .effect(tauri::window::Effect::HudWindow)
+                    .radius(5.0)
+                    .build(),
+            )
+        })
+        .collection_behavior(
+            CollectionBehavior::new()
+                .can_join_all_spaces()
+                .full_screen_auxiliary(),
+        )
+        .build()
+    {
+        Ok(_) => {
+            if let Some(window) = app_handle.get_webview_window("presence_mark") {
+                finish_presence_window(&window);
+            }
+        }
+        Err(e) => log::error!("Failed to create presence mark: {e}"),
+    }
+}
+
 fn show_overlay_state(app_handle: &AppHandle, state: &str) {
     // Whether the overlay shows at all is governed by overlay_style; position
     // only chooses Top vs Bottom placement. Checked here (off the main thread)
@@ -590,6 +740,10 @@ fn show_overlay_state_on_main(app_handle: &AppHandle, state: &str) {
         }
 
         let _ = overlay_window.emit("show-overlay", state);
+        // The banner is up, so the idle glass mark steps aside.
+        if let Some(mark) = app_handle.get_webview_window("presence_mark") {
+            let _ = mark.hide();
+        }
     }
 }
 
@@ -630,6 +784,13 @@ pub fn show_processing_overlay(app_handle: &AppHandle) {
     show_overlay_state(app_handle, "processing");
 }
 
+/// Test signal on the recording overlay: `calling`, `rewrote`, `unchanged`, or `failed`.
+pub fn emit_deepseek_status(app_handle: &AppHandle, status: &str) {
+    if let Some(window) = app_handle.get_webview_window("recording_overlay") {
+        let _ = window.emit("deepseek-status", status);
+    }
+}
+
 /// Updates the overlay window position based on current settings
 pub fn update_overlay_position(app_handle: &AppHandle) {
     // Positioning queries monitors/cursor (GDK/Xlib on Linux) and moves the
@@ -647,6 +808,7 @@ fn update_overlay_position_on_main(app_handle: &AppHandle) {
                 Ok(gtk_window) => configure_layer_shell_position(&gtk_window, position),
                 Err(error) => log::error!("Failed to access GTK overlay window: {error}"),
             }
+            place_presence_mark_on_main(app_handle);
             return;
         }
 
@@ -675,6 +837,7 @@ fn update_overlay_position_on_main(app_handle: &AppHandle) {
             }
         }
     }
+    place_presence_mark_on_main(app_handle);
 }
 
 /// Generation counter bumped every time the overlay is shown. The delayed
@@ -698,6 +861,7 @@ pub fn hide_recording_overlay(app_handle: &AppHandle) {
         // Hide the window after a short delay to allow animation to complete,
         // unless a newer session has shown the overlay again by then.
         let window_clone = overlay_window.clone();
+        let app_for_presence = app_handle.clone();
         std::thread::spawn(move || {
             std::thread::sleep(std::time::Duration::from_millis(300));
             if OVERLAY_SHOW_GENERATION.load(Ordering::SeqCst) != scheduled_at {
@@ -705,6 +869,9 @@ pub fn hide_recording_overlay(app_handle: &AppHandle) {
                 return;
             }
             let _ = window_clone.hide();
+            let app = app_for_presence.clone();
+            let _ = app_for_presence
+                .run_on_main_thread(move || place_presence_mark_on_main(&app));
         });
     }
 }
@@ -824,7 +991,7 @@ mod tests {
                 OVERLAY_HEIGHT,
                 OverlayPosition::Bottom,
             ),
-            (3648, 2025, 384, 75)
+            (3648, 1983, 384, 117)
         );
         assert_eq!(
             windows_overlay_bounds(
@@ -836,7 +1003,7 @@ mod tests {
                 OVERLAY_HEIGHT,
                 OverlayPosition::Top,
             ),
-            (3648, 6, 384, 75)
+            (3648, 6, 384, 117)
         );
     }
 
@@ -853,7 +1020,7 @@ mod tests {
                 OVERLAY_STREAM_HEIGHT,
                 OverlayPosition::Bottom,
             ),
-            (-1530, 1040, 500, 150)
+            (-1530, 1005, 500, 185)
         );
     }
 
@@ -872,9 +1039,9 @@ mod tests {
             OVERLAY_STREAM_HEIGHT,
             OverlayPosition::Bottom,
         );
-        // 400x120 logical at 1.25 DPI x 1.1 text, still centered horizontally.
-        assert_eq!((x, y, width, height), (-1555, 1025, 550, 165));
-        // Bottom edge unchanged from the 1.0 case above (1040 + 150).
+        // 400x148 logical at 1.25 DPI x 1.1 text, still centered horizontally.
+        assert_eq!((x, y, width, height), (-1555, 986, 550, 204));
+        // Bottom edge unchanged from the 1.0 case above (1005 + 185).
         assert_eq!(y + height, 1190);
 
         let (_, top_y, _, _) = windows_overlay_bounds(

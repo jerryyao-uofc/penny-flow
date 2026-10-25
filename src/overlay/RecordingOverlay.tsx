@@ -25,6 +25,13 @@ const WAVE_BARS = 9;
 // the user is speaking; cold loads can take 40s+.
 const SLOW_MODEL_LOAD_MS = 2000;
 
+const DEEPSEEK_LABEL = {
+  calling: "Calling DeepSeek",
+  rewrote: "DeepSeek rewrote this",
+  unchanged: "DeepSeek replied, unchanged",
+  failed: "DeepSeek call failed",
+} as const;
+
 const RecordingOverlay: React.FC = () => {
   const { t } = useTranslation();
   const [isVisible, setIsVisible] = useState(false);
@@ -61,6 +68,10 @@ const RecordingOverlay: React.FC = () => {
   // True once live text overflows the cap. A top overlay fades its top edge only
   // while overflowing, so the resting first line stays crisp flush under the pill.
   const [overflowing, setOverflowing] = useState(false);
+  // Testing signal: DeepSeek was called, and whether the reply changed the text.
+  const [deepseek, setDeepseek] = useState<
+    "calling" | "rewrote" | "unchanged" | "failed" | null
+  >(null);
 
   const smoothedLevelsRef = useRef<number[]>(Array(16).fill(0));
   // Live-text scroll-back: the text region "sticks" to the newest line while the
@@ -79,6 +90,7 @@ const RecordingOverlay: React.FC = () => {
         // them would overwrite that event and leave the overlay stuck arming.
         if (overlayState === "recording" || overlayState === "streaming") {
           setCaptureReady(false);
+          setDeepseek(null);
           smoothedLevelsRef.current = Array(16).fill(0);
           setLevels(Array(WAVE_BARS).fill(0));
           setStreamText({ committed: "", tentative: "" });
@@ -111,6 +123,19 @@ const RecordingOverlay: React.FC = () => {
       const unlistenHide = await listen("hide-overlay", () => {
         setIsVisible(false);
         setCaptureReady(false);
+        setDeepseek(null);
+      });
+
+      const unlistenDeepseek = await listen("deepseek-status", (event) => {
+        const status = event.payload;
+        if (
+          status === "calling" ||
+          status === "rewrote" ||
+          status === "unchanged" ||
+          status === "failed"
+        ) {
+          setDeepseek(status);
+        }
       });
 
       const unlistenReady = await listen("recording-ready", () => {
@@ -170,6 +195,7 @@ const RecordingOverlay: React.FC = () => {
       return () => {
         unlistenShow();
         unlistenHide();
+        unlistenDeepseek();
         unlistenReady();
         unlistenLevel();
         unlistenStream();
@@ -285,6 +311,17 @@ const RecordingOverlay: React.FC = () => {
     </div>
   );
 
+  const deepseekNote = deepseek ? (
+    <div
+      className={`sdeepseek ${deepseek}`}
+      role="status"
+      aria-live="polite"
+    >
+      <i />
+      {DEEPSEEK_LABEL[deepseek]}
+    </div>
+  ) : null;
+
   // ---- Live overlay: a pill that sculpts open into a panel ----
   if (state === "streaming") {
     const hasText =
@@ -340,6 +377,7 @@ const RecordingOverlay: React.FC = () => {
                 true,
               )
             : listeningRow(open, true)}
+          {deepseekNote}
         </div>
       </div>
     );
@@ -361,6 +399,7 @@ const RecordingOverlay: React.FC = () => {
         className={`scard compact ${working && isVisible ? "cworking" : ""}`}
       >
         {working ? workingRow(workLabel, true) : listeningRow(false, true)}
+        {deepseekNote}
       </div>
     </div>
   );

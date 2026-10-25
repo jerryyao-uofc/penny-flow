@@ -1,6 +1,8 @@
 #[cfg(all(target_os = "macos", target_arch = "aarch64"))]
 use crate::apple_intelligence;
-use crate::audio_feedback::{play_feedback_sound, play_feedback_sound_blocking, SoundType};
+use crate::audio_feedback::{
+    play_cue, play_feedback_sound, play_feedback_sound_blocking, Cue, SoundType,
+};
 use crate::audio_toolkit::VadPolicy;
 use crate::managers::audio::{recording_error_type, AudioRecordingManager};
 use crate::managers::history::HistoryManager;
@@ -12,7 +14,8 @@ use crate::settings::{get_settings, AppSettings, OverlayStyle, APPLE_INTELLIGENC
 use crate::shortcut;
 use crate::tray::{set_tray_state, TrayIconState};
 use crate::utils::{
-    self, show_processing_overlay, show_recording_overlay, show_transcribing_overlay,
+    self, emit_deepseek_status, show_processing_overlay, show_recording_overlay,
+    show_transcribing_overlay,
 };
 use crate::TranscriptionCoordinator;
 use log::{debug, error, warn};
@@ -175,7 +178,24 @@ fn should_use_streaming_overlay(style: OverlayStyle, is_streaming: bool) -> bool
     style == OverlayStyle::Live && is_streaming
 }
 
-async fn post_process_transcription(settings: &AppSettings, transcription: &str) -> Option<String> {
+fn word_count(text: &str) -> usize {
+    text.split_whitespace()
+        .filter(|word| word.chars().any(|ch| ch.is_alphanumeric()))
+        .count()
+}
+
+/// Dictation longer than five words is rewritten automatically.
+fn transcription_needs_post_process(text: &str) -> bool {
+    word_count(text) > 5
+}
+
+async fn post_process_transcription(
+    app: &AppHandle,
+    settings: &AppSettings,
+    transcription: &str,
+    deepseek_signaled: &mut bool,
+    deepseek_succeeded: &mut bool,
+) -> Option<String> {
     if is_blank_transcription(transcription) {
         debug!("Post-processing skipped because the transcription is empty");
         return None;
@@ -242,10 +262,18 @@ async fn post_process_transcription(settings: &AppSettings, transcription: &str)
         .cloned()
         .unwrap_or_default();
 
+    if provider.id != APPLE_INTELLIGENCE_PROVIDER_ID && api_key.trim().is_empty() {
+        debug!(
+            "Post-processing skipped because provider '{}' has no API key",
+            provider.id
+        );
+        return None;
+    }
+
     // Ask these providers to skip reasoning/thinking — post-processing rarely
     // benefits from it and it adds seconds of latency. llm_client picks the
     // field the endpoint understands and retries without it if rejected.
-    let disable_reasoning = matches!(provider.id.as_str(), "custom" | "openrouter");
+    let disable_reasoning = matches!(provider.id.as_str(), "custom" | "openrouter" | "deepseek");
 
     if provider.supports_structured_output {
         debug!("Using structured outputs for provider '{}'", provider.id);
@@ -368,6 +396,12 @@ async fn post_process_transcription(settings: &AppSettings, transcription: &str)
     let processed_prompt = prompt.replace("${output}", transcription);
     debug!("Processed prompt length: {} chars", processed_prompt.len());
 
+    let deepseek = provider.id == "deepseek";
+    if deepseek {
+        emit_deepseek_status(app, "calling");
+        *deepseek_signaled = true;
+    }
+
     match crate::llm_client::send_chat_completion(
         &provider,
         api_key,
@@ -384,10 +418,25 @@ async fn post_process_transcription(settings: &AppSettings, transcription: &str)
                 provider.id,
                 content.len()
             );
+            if content.trim().is_empty() {
+                if deepseek {
+                    emit_deepseek_status(app, "failed");
+                }
+                // A blank reply must not replace the transcript that gets pasted.
+                return None;
+            }
+            if deepseek {
+                let changed = content.trim() != transcription.trim();
+                *deepseek_succeeded = true;
+                emit_deepseek_status(app, if changed { "rewrote" } else { "unchanged" });
+            }
             Some(content)
         }
         Ok(None) => {
             error!("LLM API response has no content");
+            if deepseek {
+                emit_deepseek_status(app, "failed");
+            }
             None
         }
         Err(e) => {
@@ -396,6 +445,9 @@ async fn post_process_transcription(settings: &AppSettings, transcription: &str)
                 provider.id,
                 e
             );
+            if deepseek {
+                emit_deepseek_status(app, "failed");
+            }
             None
         }
     }
@@ -405,6 +457,10 @@ pub(crate) struct ProcessedTranscription {
     pub final_text: String,
     pub post_processed_text: Option<String>,
     pub post_process_prompt: Option<String>,
+    /// A DeepSeek request was sent, so the overlay keeps its test line up briefly.
+    pub deepseek_signaled: bool,
+    /// DeepSeek returned a rewrite. The finish beep plays after paste.
+    pub deepseek_succeeded: bool,
 }
 
 pub(crate) async fn process_transcription_output(
@@ -416,19 +472,33 @@ pub(crate) async fn process_transcription_output(
     let mut final_text = transcription.to_string();
     let mut post_processed_text: Option<String> = None;
     let mut post_process_prompt: Option<String> = None;
+    let mut deepseek_signaled = false;
+    let mut deepseek_succeeded = false;
 
     if post_process {
-        if let Some(processed_text) = post_process_transcription(&settings, &final_text).await {
-            post_processed_text = Some(processed_text.clone());
-            final_text = processed_text;
+        if let Some(processed_text) = post_process_transcription(
+            app,
+            &settings,
+            &final_text,
+            &mut deepseek_signaled,
+            &mut deepseek_succeeded,
+        )
+        .await
+        {
+            if processed_text.trim().is_empty() {
+                debug!("Post-processing returned blank text; pasting the original transcription");
+            } else {
+                post_processed_text = Some(processed_text.clone());
+                final_text = processed_text;
 
-            if let Some(prompt_id) = &settings.post_process_selected_prompt_id {
-                if let Some(prompt) = settings
-                    .post_process_prompts
-                    .iter()
-                    .find(|prompt| &prompt.id == prompt_id)
-                {
-                    post_process_prompt = Some(prompt.prompt.clone());
+                if let Some(prompt_id) = &settings.post_process_selected_prompt_id {
+                    if let Some(prompt) = settings
+                        .post_process_prompts
+                        .iter()
+                        .find(|prompt| &prompt.id == prompt_id)
+                    {
+                        post_process_prompt = Some(prompt.prompt.clone());
+                    }
                 }
             }
         }
@@ -438,6 +508,8 @@ pub(crate) async fn process_transcription_output(
         final_text,
         post_processed_text,
         post_process_prompt,
+        deepseek_signaled,
+        deepseek_succeeded,
     }
 }
 
@@ -473,6 +545,8 @@ impl ShortcutAction for TranscribeAction {
                 return;
             }
         }
+
+        play_cue(app, Cue::Hotkey);
 
         let binding_id = binding_id.to_string();
         RECORDING_SESSION.fetch_add(1, Ordering::SeqCst);
@@ -658,7 +732,11 @@ impl ShortcutAction for TranscribeAction {
         play_feedback_sound(app, SoundType::Stop);
 
         let binding_id = binding_id.to_string(); // Clone binding_id for the async task
-        let post_process = self.post_process;
+        let settings_now = get_settings(app);
+        // The normal shortcut rewrites only when the transcript is longer than
+        // five words. The dedicated shortcut still forces a rewrite.
+        let force_post_process = self.post_process;
+        let auto_post_process = settings_now.post_process_enabled;
         let cancel_generation = rm.cancel_generation();
 
         tauri::async_runtime::spawn(async move {
@@ -752,12 +830,24 @@ impl ShortcutAction for TranscribeAction {
                                 utils::redact_text(&transcription)
                             );
 
+                            let post_process = force_post_process
+                                || (auto_post_process
+                                    && transcription_needs_post_process(&transcription));
                             if post_process {
+                                debug!(
+                                    "Sending {} word(s) to post-processing",
+                                    word_count(&transcription)
+                                );
                                 if use_streaming_overlay {
                                     tm.emit_stream_working(StreamWorkKind::Polishing);
                                 } else {
                                     show_processing_overlay(&ah);
                                 }
+                            } else if auto_post_process {
+                                debug!(
+                                    "Skipping post-processing for {} word(s)",
+                                    word_count(&transcription)
+                                );
                             }
                             let Some(processed) = complete_unless_cancelled(
                                 process_transcription_output(&ah, &transcription, post_process),
@@ -803,7 +893,18 @@ impl ShortcutAction for TranscribeAction {
                             } else {
                                 let ah_clone = ah.clone();
                                 let paste_time = Instant::now();
+                                debug!(
+                                    "Pasting {} ({} chars)",
+                                    if processed.post_processed_text.is_some() {
+                                        "DeepSeek post-processed text"
+                                    } else {
+                                        "original transcription"
+                                    },
+                                    processed.final_text.chars().count()
+                                );
                                 let final_text = processed.final_text;
+                                let hold_deepseek_note = processed.deepseek_signaled;
+                                let deepseek_succeeded = processed.deepseek_succeeded;
                                 let rm_for_paste = Arc::clone(&rm);
                                 // Taken before the paste thread exists, and so
                                 // before the next session can start.
@@ -837,8 +938,23 @@ impl ShortcutAction for TranscribeAction {
                                                     TranscriptionOutcome::Failed
                                                 }
                                             };
+                                        if deepseek_succeeded
+                                            && matches!(outcome, TranscriptionOutcome::Typed)
+                                            && RECORDING_SESSION.load(Ordering::SeqCst) == session
+                                        {
+                                            play_cue(&ah_clone, Cue::PostProcessDone);
+                                        }
                                         // A new session may have started while
                                         // this paste ran; the UI is now its.
+                                        // Keep the DeepSeek test line on screen
+                                        // long enough to see and hear it.
+                                        if hold_deepseek_note
+                                            && RECORDING_SESSION.load(Ordering::SeqCst) == session
+                                        {
+                                            std::thread::sleep(std::time::Duration::from_millis(
+                                                2200,
+                                            ));
+                                        }
                                         if RECORDING_SESSION.load(Ordering::SeqCst) == session {
                                             utils::hide_recording_overlay(&ah_clone);
                                             set_tray_state(&ah_clone, TrayIconState::Idle);
@@ -883,7 +999,7 @@ impl ShortcutAction for TranscribeAction {
                                 if let Err(save_err) = hm.save_entry(
                                     file_name,
                                     String::new(),
-                                    post_process,
+                                    force_post_process,
                                     None,
                                     None,
                                 ) {
@@ -984,7 +1100,7 @@ pub static ACTION_MAP: Lazy<HashMap<String, Arc<dyn ShortcutAction>>> = Lazy::ne
 mod tests {
     use super::{
         complete_unless_cancelled, is_blank_transcription, should_use_streaming_overlay,
-        strip_think_block,
+        strip_think_block, transcription_needs_post_process, word_count,
     };
     use crate::settings::OverlayStyle;
     use std::future;
@@ -1058,6 +1174,16 @@ mod tests {
             strip_think_block("<think>never closed"),
             "<think>never closed"
         );
+    }
+
+    #[test]
+    fn post_processing_starts_after_five_words() {
+        assert_eq!(word_count("one two three four five"), 5);
+        assert_eq!(word_count("one two three four five six"), 6);
+        assert!(!transcription_needs_post_process("one two three four five"));
+        assert!(transcription_needs_post_process(
+            "one two three four five six"
+        ));
     }
 
     #[test]

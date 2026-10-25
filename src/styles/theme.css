@@ -9,14 +9,20 @@
   /* Palette source of truth. Each themed color is defined once as a
      light/dark pair; the active tokens below and the `data-theme` overrides
      in App.css reference these, so a hex value lives in exactly one place. */
-  --light-color-text: #0f0f0f;
-  --light-color-background: #fbfbfb;
-  --light-color-logo-primary: #faa2ca;
-  --light-color-logo-stroke: #382731;
+  --light-color-text: #111111;
+  --light-color-background: #f6f6f4;
+  --light-color-logo-primary: #111111;
+  --light-color-logo-stroke: #111111;
+  --light-color-background-ui: #111111;
+  --light-color-on-accent: #ffffff;
+  --light-color-nav-active: #dcdcd8;
 
-  --dark-color-text: #fbfbfb;
-  --dark-color-background: #2c2b29;
-  --dark-color-logo-primary: #f28cbb;
+  --dark-color-text: #f5f5f5;
+  --dark-color-background: #0c0c0c;
+  --dark-color-logo-primary: #c8f54a;
+  --dark-color-background-ui: #c8f54a;
+  --dark-color-on-accent: #111111;
+  --dark-color-nav-active: #3a3a3a;
 
   /* Status colors. Each has a -wash tint below. */
   --light-color-warning: #d97706;
@@ -24,7 +30,7 @@
   --dark-color-warning: #fbbf24;
   --dark-color-error: #f87171;
 
-  /* Success. Pink already means "recording", so it gets its own hue. */
+  /* Success. The lime accent is the brand color, so this stays green. */
   --light-color-moss: #2f7d5b;
   --dark-color-moss: #86c9a4;
 
@@ -50,29 +56,29 @@
   --light-demo-wallpaper:
     radial-gradient(
       110% 80% at 90% 105%,
-      color-mix(in srgb, var(--light-color-logo-primary) 50%, #fbfbfb) 0%,
+      color-mix(in srgb, #c8f54a 55%, #f6f6f4) 0%,
       transparent 60%
     ),
     radial-gradient(
       90% 80% at 5% -5%,
-      color-mix(in srgb, #c7b9ef 55%, #fbfbfb) 0%,
+      color-mix(in srgb, #111111 10%, #f6f6f4) 0%,
       transparent 62%
     ),
-    color-mix(in srgb, #e9e1f3 60%, #fbfbfb);
+    #f6f6f4;
   --dark-demo-wallpaper:
     radial-gradient(
       110% 80% at 90% 105%,
-      color-mix(in srgb, var(--dark-color-logo-primary) 26%, #1b1719) 0%,
+      color-mix(in srgb, var(--dark-color-logo-primary) 28%, #0c0c0c) 0%,
       transparent 60%
     ),
     radial-gradient(
       90% 80% at 5% -5%,
-      color-mix(in srgb, #7c68c0 38%, #1b1719) 0%,
+      color-mix(in srgb, #c8f54a 12%, #0c0c0c) 0%,
       transparent 62%
     ),
-    #1f1a1e;
+    #0c0c0c;
 
-  /* The wordmark. Dark mode outlines it in white to cut down on pinks. */
+  /* The wordmark. Dark mode outlines it in white against the black ground. */
   --light-color-wordmark: var(--light-color-logo-primary);
   --light-color-wordmark-stroke: var(--light-color-logo-stroke);
   --dark-color-wordmark: var(--dark-color-logo-primary);
@@ -124,7 +130,6 @@
   );
 
   /* Tokens that do not change between light and dark */
-  --color-background-ui: #da5893;
   --color-mid-gray: #808080;
 
   /* Active palette — defaults to light, follows the OS via the media query
@@ -132,6 +137,9 @@
   --color-text: var(--light-color-text);
   --color-background: var(--light-color-background);
   --color-logo-primary: var(--light-color-logo-primary);
+  --color-background-ui: var(--light-color-background-ui);
+  --color-on-accent: var(--light-color-on-accent);
+  --color-nav-active: var(--light-color-nav-active);
   --color-warning: var(--light-color-warning);
   --color-error: var(--light-color-error);
   --color-moss: var(--light-color-moss);
@@ -170,6 +178,9 @@
     --color-text: var(--dark-color-text);
     --color-background: var(--dark-color-background);
     --color-logo-primary: var(--dark-color-logo-primary);
+    --color-background-ui: var(--dark-color-background-ui);
+    --color-on-accent: var(--dark-color-on-accent);
+    --color-nav-active: var(--dark-color-nav-active);
     --color-warning: var(--dark-color-warning);
     --color-error: var(--dark-color-error);
     --color-moss: var(--dark-color-moss);
@@ -203,6 +214,9 @@
   --color-text: var(--light-color-text);
   --color-background: var(--light-color-background);
   --color-logo-primary: var(--light-color-logo-primary);
+  --color-background-ui: var(--light-color-background-ui);
+  --color-on-accent: var(--light-color-on-accent);
+  --color-nav-active: var(--light-color-nav-active);
   --color-warning: var(--light-color-warning);
   --color-error: var(--light-color-error);
   --color-moss: var(--light-color-moss);
@@ -225,6 +239,9 @@
   --color-text: var(--dark-color-text);
   --color-background: var(--dark-color-background);
   --color-logo-primary: var(--dark-color-logo-primary);
+  --color-background-ui: var(--dark-color-background-ui);
+  --color-on-accent: var(--dark-color-on-accent);
+  --color-nav-active: var(--dark-color-nav-active);
   --color-warning: var(--dark-color-warning);
   --color-error: var(--dark-color-error);
   --color-moss: var(--dark-color-moss);

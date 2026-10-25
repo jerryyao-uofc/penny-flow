@@ -1,7 +1,10 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { listen } from "@tauri-apps/api/event";
+import { getCurrentWindow } from "@tauri-apps/api/window";
+import PresenceMark from "./PresenceMark";
 import RecordingOverlay from "./RecordingOverlay";
+import "./PresenceMark.css";
 import {
   applyTheme,
   getStoredTheme,
@@ -18,8 +21,10 @@ applyTheme(getStoredTheme());
 syncThemeFromSettings();
 listen<Theme>("theme-changed", (event) => applyTheme(event.payload));
 
+const isPresenceMark = getCurrentWindow().label === "presence_mark";
+
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
-    <RecordingOverlay />
+    {isPresenceMark ? <PresenceMark /> : <RecordingOverlay />}
   </React.StrictMode>,
 );

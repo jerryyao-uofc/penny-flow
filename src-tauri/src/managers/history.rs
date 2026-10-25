@@ -96,6 +96,10 @@ impl HistoryManager {
         // Initialize database and run migrations synchronously
         manager.init_database()?;
 
+        if let Err(error) = manager.cleanup_old_entries() {
+            warn!("Failed to prune history on startup: {error}");
+        }
+
         Ok(manager)
     }
 
@@ -477,17 +481,26 @@ impl HistoryManager {
         // Calculate cutoff timestamp (current time minus retention period)
         let now = Utc::now().timestamp();
         let cutoff_timestamp = match retention_period {
+            crate::settings::RecordingRetentionPeriod::Hours5 => now - (5 * 60 * 60),
             crate::settings::RecordingRetentionPeriod::Days3 => now - (3 * 24 * 60 * 60), // 3 days in seconds
             crate::settings::RecordingRetentionPeriod::Weeks2 => now - (2 * 7 * 24 * 60 * 60), // 2 weeks in seconds
             crate::settings::RecordingRetentionPeriod::Months3 => now - (3 * 30 * 24 * 60 * 60), // 3 months in seconds (approximate)
             _ => unreachable!("Should not reach here"),
         };
 
-        // Unsaved dictations older than the cutoff; transcribed files are only
-        // ever deleted explicitly.
-        let mut stmt = conn.prepare(
-            "SELECT id, file_name FROM transcription_history WHERE saved = 0 AND source_name IS NULL AND timestamp < ?1",
-        )?;
+        // The five-hour policy drops every dictation, including ones marked
+        // saved. Longer policies still keep saved rows. Transcribed files are
+        // only ever deleted explicitly.
+        let include_saved = matches!(
+            retention_period,
+            crate::settings::RecordingRetentionPeriod::Hours5
+        );
+        let sql = if include_saved {
+            "SELECT id, file_name FROM transcription_history WHERE source_name IS NULL AND timestamp < ?1"
+        } else {
+            "SELECT id, file_name FROM transcription_history WHERE saved = 0 AND source_name IS NULL AND timestamp < ?1"
+        };
+        let mut stmt = conn.prepare(sql)?;
 
         let rows = stmt.query_map(params![cutoff_timestamp], |row| {
             Ok((row.get::<_, i64>("id")?, row.get::<_, String>("file_name")?))

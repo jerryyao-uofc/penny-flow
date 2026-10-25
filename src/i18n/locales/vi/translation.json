@@ -22,7 +22,7 @@
     "customModelDescription": "Không được hỗ trợ chính thức",
     "migration": {
       "title": "Các mô hình của bạn cần được cập nhật",
-      "description": "Handy hiện sử dụng loại mô hình mới hơn. Hãy tải phiên bản mới để tiếp tục chuyển đổi giọng nói. Các phiên bản cũ sẽ bị xóa.",
+      "description": "Penny Flow hiện sử dụng loại mô hình mới hơn. Hãy tải phiên bản mới để tiếp tục chuyển đổi giọng nói. Các phiên bản cũ sẽ bị xóa.",
       "replaces": "Thay thế {{name}}",
       "oldFormat": "Định dạng cũ",
       "failed": "Tải xuống thất bại",
@@ -59,11 +59,11 @@
     "permissions": {
       "microphone": {
         "name": "Micrô",
-        "why": "Để Handy nghe được bạn. Âm thanh được chuyển thành văn bản ngay trên máy tính này và không bao giờ được tải lên."
+        "why": "Để Penny Flow nghe được bạn. Âm thanh được chuyển thành văn bản ngay trên máy tính này và không bao giờ được tải lên."
       },
       "accessibility": {
         "name": "Trợ năng",
-        "why": "Để phím tắt của bạn hoạt động trong mọi ứng dụng, và Handy có thể gõ văn bản vào nơi con trỏ của bạn đang đứng."
+        "why": "Để phím tắt của bạn hoạt động trong mọi ứng dụng, và Penny Flow có thể gõ văn bản vào nơi con trỏ của bạn đang đứng."
       },
       "errors": {
         "checkFailed": "Không thể kiểm tra quyền. Vui lòng thử lại.",
@@ -77,12 +77,12 @@
       "openSettings": "Mở cài đặt",
       "allowed": "Đã cho phép",
       "waiting": "Đang chờ",
-      "turnOnMac": "Bật Handy trong Cài đặt Hệ thống, rồi quay lại đây.",
+      "turnOnMac": "Bật Penny Flow trong Cài đặt Hệ thống, rồi quay lại đây.",
       "turnOnWindows": "Bật quyền truy cập micrô trong Cài đặt Windows, rồi quay lại đây.",
       "hintBoth": "Hãy cho phép cả hai để tiếp tục",
       "hintMicrophone": "Hãy cho phép micrô để tiếp tục",
       "welcomeBack": "Chào mừng bạn quay lại. Tiếp tục từ chỗ bạn đã dừng.",
-      "relaunch": "Phím tắt không phản hồi sau bước này? <relaunch>Khởi chạy lại Handy</relaunch> và bạn sẽ quay lại đúng chỗ này."
+      "relaunch": "Phím tắt không phản hồi sau bước này? <relaunch>Khởi chạy lại Penny Flow</relaunch> và bạn sẽ quay lại đúng chỗ này."
     },
     "shell": {
       "back": "Quay lại",
@@ -93,11 +93,11 @@
       "title": "Nói thay vì gõ, trong mọi ứng dụng",
       "subtitle": "Chọn các ngôn ngữ bạn sẽ dùng để đọc chính tả",
       "languagesLabel": "Ngôn ngữ",
-      "noMatch": "Không có ngôn ngữ nào khớp với “{{query}}”. Các mô hình của Handy hỗ trợ khoảng 100 ngôn ngữ; còn nhiều ngôn ngữ khác trong cài đặt.",
+      "noMatch": "Không có ngôn ngữ nào khớp với “{{query}}”. Các mô hình của Penny Flow hỗ trợ khoảng 100 ngôn ngữ; còn nhiều ngôn ngữ khác trong cài đặt.",
       "appLanguage": "Ngôn ngữ ứng dụng",
       "menusIn": "Menu bằng <b>{{language}}</b>",
       "chinese": {
-        "question": "Bạn nói {{languages}}. Handy nên viết bằng chữ nào?",
+        "question": "Bạn nói {{languages}}. Penny Flow nên viết bằng chữ nào?",
         "label": "Chữ Hán",
         "zh-Hans": "Giản thể",
         "zh-Hant": "Đài Loan",
@@ -167,7 +167,7 @@
     },
     "try": {
       "title": "Thử xem nào!",
-      "subtitle": "Handy ở ngay góc màn hình để hướng dẫn bạn",
+      "subtitle": "Penny Flow ở ngay góc màn hình để hướng dẫn bạn",
       "noteLabel": "Ghi chú",
       "placeholder": "Ghi chú mới",
       "hold": "Giữ <keys/> và nói.",
@@ -195,14 +195,14 @@
     },
     "done": {
       "title": "Mọi thứ đã sẵn sàng",
-      "subMac": "Handy giờ đã ở trên thanh menu. Giữ hoặc nhấn <keys/> trong bất kỳ ứng dụng nào để nói.",
-      "subTray": "Handy giờ đã ở trong khay hệ thống. Giữ hoặc nhấn <keys/> trong bất kỳ ứng dụng nào để nói.",
+      "subMac": "Penny Flow giờ đã ở trên thanh menu. Giữ hoặc nhấn <keys/> trong bất kỳ ứng dụng nào để nói.",
+      "subTray": "Penny Flow giờ đã ở trong khay hệ thống. Giữ hoặc nhấn <keys/> trong bất kỳ ứng dụng nào để nói.",
       "hint": "Bạn có thể thay đổi những mục này sau trong Cài đặt",
       "highFiveLabel": "Đập tay",
-      "atLogin": "Khởi động Handy khi tôi đăng nhập",
+      "atLogin": "Khởi động Penny Flow khi tôi đăng nhập",
       "finish": "Xong",
       "panel": {
-        "name": "Handy",
+        "name": "Penny Flow",
         "ready": "Sẵn sàng",
         "languages": "Ngôn ngữ",
         "model": "Mô hình giọng nói",
@@ -327,7 +327,7 @@
     "general": {
       "title": "Chung",
       "shortcut": {
-        "title": "Phím tắt Handy",
+        "title": "Phím tắt Penny Flow",
         "description": "Cấu hình phím tắt để kích hoạt ghi âm chuyển đổi giọng nói thành văn bản",
         "loading": "Đang tải phím tắt...",
         "none": "Chưa cấu hình phím tắt",
@@ -360,7 +360,7 @@
       },
       "preferredLanguages": {
         "title": "Ngôn ngữ ưa thích",
-        "description": "Các ngôn ngữ bạn nói. Handy dùng chúng để đề xuất mô hình.",
+        "description": "Các ngôn ngữ bạn nói. Penny Flow dùng chúng để đề xuất mô hình.",
         "noMatch": "Không có ngôn ngữ nào khớp với “{{query}}”",
         "weak": "Chưa có mô hình nào nhận dạng tốt {{languages}}."
       },
@@ -387,17 +387,17 @@
         "fits": "Cho các ngôn ngữ của bạn",
         "untested": "Chưa kiểm thử"
       },
-      "untestedNote": "Chưa được kiểm thử với Handy. Chúng có thể chậm hơn hoặc mắc nhiều lỗi hơn.",
+      "untestedNote": "Chưa được kiểm thử với Penny Flow. Chúng có thể chậm hơn hoặc mắc nhiều lỗi hơn.",
       "untestedHidden_one": "{{count}} mô hình khác chưa được tinh chỉnh cho việc đọc chính tả. Hãy tìm kiếm để thấy nó.",
       "untestedHidden_other": "{{count}} mô hình khác chưa được tinh chỉnh cho việc đọc chính tả. Hãy tìm kiếm để thấy chúng.",
-      "emptyYours": "Chưa có mô hình nào. Hãy chọn một mô hình bên dưới: nó sẽ được tải xuống, rồi Handy sẽ dùng nó.",
+      "emptyYours": "Chưa có mô hình nào. Hãy chọn một mô hình bên dưới: nó sẽ được tải xuống, rồi Penny Flow sẽ dùng nó.",
       "showMore": "Hiển thị thêm {{count}}",
       "showFewer": "Hiển thị ít hơn",
       "download": "Tải xuống và dùng",
       "downloadingThenUse": "{{percent}}% của {{total}}, rồi tự chuyển sang",
       "loading": "Đang tải…",
       "deleteAsk": "Xóa {{name}}? Việc này giải phóng {{size}}.",
-      "deleteAskActive": "Xóa {{name}}? Handy không thể chuyển đổi giọng nói cho đến khi bạn chọn mô hình khác.",
+      "deleteAskActive": "Xóa {{name}}? Penny Flow không thể chuyển đổi giọng nói cho đến khi bạn chọn mô hình khác.",
       "cancel": "Hủy",
       "deleteModel": "Xóa {{name}}",
       "cancelDownload": "Dừng tải xuống {{name}}",
@@ -411,7 +411,7 @@
         "marks": "? chưa được đo. — không nghe được ngôn ngữ đó."
       },
       "retiredNotice": {
-        "title": "Các mô hình cũ không còn hoạt động với Handy",
+        "title": "Các mô hình cũ không còn hoạt động với Penny Flow",
         "description": "Chúng đang chiếm {{size}} trên máy tính của bạn.",
         "delete": "Xóa mô hình",
         "deleted": "Đã xóa các mô hình cũ",
@@ -419,7 +419,7 @@
       },
       "rescan": {
         "label": "Quét lại",
-        "tooltip": "Quét lại các mô hình được thêm vào thư mục mô hình hoặc bộ nhớ đệm Hugging Face bên ngoài Handy"
+        "tooltip": "Quét lại các mô hình được thêm vào thư mục mô hình hoặc bộ nhớ đệm Hugging Face bên ngoài Penny Flow"
       }
     },
     "languages": {
@@ -485,11 +485,11 @@
       },
       "autostart": {
         "label": "Khởi động cùng hệ thống",
-        "description": "Tự động khởi động Handy khi bạn đăng nhập vào máy tính."
+        "description": "Tự động khởi động Penny Flow khi bạn đăng nhập vào máy tính."
       },
       "showTrayIcon": {
         "label": "Hiển thị biểu tượng khay",
-        "description": "Hiển thị biểu tượng Handy trong khay hệ thống."
+        "description": "Hiển thị biểu tượng Penny Flow trong khay hệ thống."
       },
       "overlay": {
         "style": {
@@ -720,7 +720,7 @@
       },
       "updateChecks": {
         "label": "Kiểm tra cập nhật",
-        "description": "Tự động kiểm tra phiên bản mới của Handy",
+        "description": "Tự động kiểm tra phiên bản mới của Penny Flow",
         "lockedDescription": "Đã bị vô hiệu hóa bởi cấu hình hệ thống (HANDY_DISABLE_UPDATER)"
       },
       "whatsNewPreview": {
@@ -825,7 +825,7 @@
       },
       "keyboardDiagnostic": {
         "title": "Chẩn đoán bàn phím",
-        "description": "Kiểm tra xem các sự kiện bàn phím có đến được Handy hay không. Chỉ số lượng sự kiện được ghi lại — không bao giờ ghi lại bạn bấm phím nào.",
+        "description": "Kiểm tra xem các sự kiện bàn phím có đến được Penny Flow hay không. Chỉ số lượng sự kiện được ghi lại — không bao giờ ghi lại bạn bấm phím nào.",
         "run": "Chạy chẩn đoán 10 giây",
         "running": "Đang lắng nghe… hãy bấm phím tắt của bạn vài lần (ví dụ: Option+Space)",
         "secureInputLabel": "Secure Input",
@@ -839,7 +839,7 @@
         "mouse": "Chuột",
         "verdictBlocked": "Secure Input đang chặn các sự kiện phím — phím tắt có chứa phím thường không thể hoạt động cho đến khi vấn đề này được xử lý.",
         "verdictSuspicious": "Có sự kiện phím bổ trợ nhưng không có sự kiện phím nào — thứ gì đó đang chặn phím dù Secure Input báo là đang tắt. Vui lòng báo cáo việc này trên GitHub.",
-        "verdictOk": "Các sự kiện phím đang đến Handy bình thường.",
+        "verdictOk": "Các sự kiện phím đang đến Penny Flow bình thường.",
         "verdictNoEvents": "Không ghi nhận sự kiện nào — bạn có bấm phím nào trong lúc kiểm tra không?",
         "failed": "Chẩn đoán thất bại: {{error}}"
       }
@@ -848,15 +848,15 @@
       "title": "Giới thiệu",
       "version": {
         "title": "Phiên bản",
-        "description": "Phiên bản hiện tại của Handy"
+        "description": "Phiên bản hiện tại của Penny Flow"
       },
       "whatsNewUpdates": {
         "label": "Hiển thị điểm mới",
-        "description": "Hiển thị ghi chú phát hành sau khi Handy cập nhật"
+        "description": "Hiển thị ghi chú phát hành sau khi Penny Flow cập nhật"
       },
       "appDataDirectory": {
         "title": "Thư mục dữ liệu ứng dụng",
-        "description": "Vị trí Handy lưu trữ dữ liệu"
+        "description": "Vị trí Penny Flow lưu trữ dữ liệu"
       },
       "sourceCode": {
         "title": "Mã nguồn",
@@ -865,7 +865,7 @@
       },
       "supportDevelopment": {
         "title": "Hỗ trợ phát triển",
-        "description": "Giúp chúng tôi tiếp tục xây dựng Handy",
+        "description": "Giúp chúng tôi tiếp tục xây dựng Penny Flow",
         "button": "Quyên góp"
       },
       "acknowledgments": {
@@ -873,7 +873,7 @@
         "ggml": {
           "title": "ggml",
           "description": "Suy luận hiệu suất cao của mô hình nhận dạng giọng nói tự động Whisper của OpenAI",
-          "details": "Handy sử dụng ggml để xử lý chuyển đổi giọng nói thành văn bản nhanh, cục bộ. Cảm ơn công việc tuyệt vời của Georgi Gerganov và các cộng tác viên."
+          "details": "Penny Flow sử dụng ggml để xử lý chuyển đổi giọng nói thành văn bản nhanh, cục bộ. Cảm ơn công việc tuyệt vời của Georgi Gerganov và các cộng tác viên."
         }
       }
     }
@@ -894,7 +894,7 @@
     "portableUpdateBrowseButton": "Mở GitHub Releases"
   },
   "whatsNew": {
-    "title": "Điểm mới trong Handy v{{version}}"
+    "title": "Điểm mới trong Penny Flow v{{version}}"
   },
   "common": {
     "loading": "Đang tải...",
@@ -925,11 +925,11 @@
   },
   "appLanguage": {
     "title": "Ngôn ngữ ứng dụng",
-    "description": "Thay đổi ngôn ngữ giao diện của Handy"
+    "description": "Thay đổi ngôn ngữ giao diện của Penny Flow"
   },
   "theme": {
     "title": "Giao diện ứng dụng",
-    "description": "Chọn xem Handy theo chủ đề hệ thống hay giữ ở chế độ sáng hoặc tối",
+    "description": "Chọn xem Penny Flow theo chủ đề hệ thống hay giữ ở chế độ sáng hoặc tối",
     "options": {
       "system": "Hệ thống",
       "light": "Sáng",

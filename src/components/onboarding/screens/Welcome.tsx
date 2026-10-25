@@ -1,14 +1,13 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "../../ui/Button";
 import { Radio } from "../../ui/Radio";
-import { Mascot } from "../../shared/Mascot";
 import {
   LanguageOptions,
   LanguageSearchField,
   useLanguagePicker,
 } from "../../shared/LanguagePicker";
-import HandyTextLogo from "../../icons/HandyTextLogo";
+import PennyFlowLogo from "../../icons/HandyTextLogo";
 import { OnboardingShell, ScreenHeader } from "../OnboardingShell";
 import { AppLanguageMenu } from "../AppLanguageMenu";
 import { useOnboardingStore } from "../onboardingStore";
@@ -18,9 +17,6 @@ import { modelMatchesLanguage } from "@handy-computer/models";
 import { getSupportedLanguage } from "@/i18n";
 import { languageList } from "@/lib/constants/languages";
 import { useSettings } from "@/hooks/useSettings";
-
-// The mascot waves on the first visit only.
-let waved = false;
 
 interface WelcomeProps {
   progress: { index: number; count: number };
@@ -45,9 +41,7 @@ export const Welcome: React.FC<WelcomeProps> = ({ progress, onContinue }) => {
       });
     },
   });
-  const [wave] = useState(() => !waved);
   useEffect(() => {
-    waved = true;
     const id = setTimeout(
       () => picker.inputRef.current?.focus({ preventScroll: true }),
       50,
@@ -93,9 +87,8 @@ export const Welcome: React.FC<WelcomeProps> = ({ progress, onContinue }) => {
       }
     >
       <div className="flex h-full min-h-0 flex-col items-center px-gutter pt-[6px] pb-[4px] text-center">
-        <div className="mb-[10px] inline-flex items-end gap-[8px] leading-none">
-          <Mascot size={54} animation={wave ? "wave" : null} />
-          <HandyTextLogo width={112} className="mb-[4px] block" />
+        <div className="mb-[14px] inline-flex items-end leading-none">
+          <PennyFlowLogo size="lg" />
         </div>
         <ScreenHeader
           title={t("onboarding.welcome.title")}

@@ -27,6 +27,33 @@
   --color-line-strong: var(--color-line-strong);
 }
 
+/* Penny Flow wordmark: rounded geometric type, one lime mark. */
+.pennyflow-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  font-family:
+    ui-rounded, "SF Pro Rounded", "Avenir Next", system-ui, sans-serif;
+  font-weight: 650;
+  letter-spacing: -0.05em;
+  line-height: 1;
+  color: var(--color-text);
+}
+.pennyflow-logo-md {
+  font-size: 17px;
+}
+.pennyflow-logo-lg {
+  font-size: 28px;
+}
+.pennyflow-logo i {
+  width: 7px;
+  height: 7px;
+  border-radius: 99px;
+  background: #c8f54a;
+  flex: none;
+}
+
 /* Noto Sans CJK subset (see src/lib/utils/cjkFont.ts): Windows' CJK fonts
    have no semibold to match Segoe UI. */
 @font-face {

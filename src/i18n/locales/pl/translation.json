@@ -22,7 +22,7 @@
     "customModelDescription": "Nieoficjalnie wspierane",
     "migration": {
       "title": "Twoje modele wymagają aktualizacji",
-      "description": "Handy używa teraz nowszego rodzaju modeli. Pobierz nową wersję, aby dalej korzystać z transkrypcji. Stare wersje zostaną usunięte.",
+      "description": "Penny Flow używa teraz nowszego rodzaju modeli. Pobierz nową wersję, aby dalej korzystać z transkrypcji. Stare wersje zostaną usunięte.",
       "replaces": "Zastępuje {{name}}",
       "oldFormat": "Stary format",
       "failed": "Pobieranie nie powiodło się",
@@ -59,11 +59,11 @@
     "permissions": {
       "microphone": {
         "name": "Mikrofon",
-        "why": "Żeby Handy mogło Cię słyszeć. Dźwięk jest zamieniany na tekst na tym komputerze i nigdy nie jest wysyłany."
+        "why": "Żeby Penny Flow mogło Cię słyszeć. Dźwięk jest zamieniany na tekst na tym komputerze i nigdy nie jest wysyłany."
       },
       "accessibility": {
         "name": "Dostępność",
-        "why": "Żeby Twój skrót działał w każdej aplikacji, a Handy mogło wpisywać tekst tam, gdzie jest kursor."
+        "why": "Żeby Twój skrót działał w każdej aplikacji, a Penny Flow mogło wpisywać tekst tam, gdzie jest kursor."
       },
       "errors": {
         "checkFailed": "Nie udało się sprawdzić uprawnień. Spróbuj ponownie.",
@@ -77,12 +77,12 @@
       "openSettings": "Otwórz ustawienia",
       "allowed": "Zezwolono",
       "waiting": "Oczekiwanie",
-      "turnOnMac": "Włącz Handy w Ustawieniach systemowych, a potem wróć tutaj.",
+      "turnOnMac": "Włącz Penny Flow w Ustawieniach systemowych, a potem wróć tutaj.",
       "turnOnWindows": "Włącz dostęp do mikrofonu w Ustawieniach systemu Windows, a potem wróć tutaj.",
       "hintBoth": "Zezwól na oba, aby kontynuować",
       "hintMicrophone": "Zezwól na mikrofon, aby kontynuować",
       "welcomeBack": "Witaj z powrotem. Kontynuujemy od miejsca, w którym skończyliśmy.",
-      "relaunch": "Skrót nadal nie reaguje? <relaunch>Uruchom Handy ponownie</relaunch>, a wrócisz dokładnie tutaj."
+      "relaunch": "Skrót nadal nie reaguje? <relaunch>Uruchom Penny Flow ponownie</relaunch>, a wrócisz dokładnie tutaj."
     },
     "shell": {
       "back": "Wstecz",
@@ -93,11 +93,11 @@
       "title": "Mów zamiast pisać, w każdej aplikacji",
       "subtitle": "Wybierz języki, w których będziesz dyktować",
       "languagesLabel": "Języki",
-      "noMatch": "Żaden język nie pasuje do „{{query}}”. Modele Handy obejmują około 100 języków; więcej znajdziesz w ustawieniach.",
+      "noMatch": "Żaden język nie pasuje do „{{query}}”. Modele Penny Flow obejmują około 100 języków; więcej znajdziesz w ustawieniach.",
       "appLanguage": "Język aplikacji",
       "menusIn": "Menu po: <b>{{language}}</b>",
       "chinese": {
-        "question": "Mówisz: {{languages}}. Jakimi znakami ma pisać Handy?",
+        "question": "Mówisz: {{languages}}. Jakimi znakami ma pisać Penny Flow?",
         "label": "Znaki chińskie",
         "zh-Hans": "Uproszczone",
         "zh-Hant": "Tajwan",
@@ -167,7 +167,7 @@
     },
     "try": {
       "title": "Spróbuj!",
-      "subtitle": "Handy czeka w rogu i pomoże Ci przejść przez to krok po kroku",
+      "subtitle": "Penny Flow czeka w rogu i pomoże Ci przejść przez to krok po kroku",
       "noteLabel": "Notatka",
       "placeholder": "Nowa notatka",
       "hold": "Przytrzymaj <keys/> i mów.",
@@ -195,14 +195,14 @@
     },
     "done": {
       "title": "Wszystko gotowe",
-      "subMac": "Handy jest teraz na pasku menu. Przytrzymaj lub naciśnij <keys/> w dowolnej aplikacji, aby mówić.",
-      "subTray": "Handy jest teraz w zasobniku systemowym. Przytrzymaj lub naciśnij <keys/> w dowolnej aplikacji, aby mówić.",
+      "subMac": "Penny Flow jest teraz na pasku menu. Przytrzymaj lub naciśnij <keys/> w dowolnej aplikacji, aby mówić.",
+      "subTray": "Penny Flow jest teraz w zasobniku systemowym. Przytrzymaj lub naciśnij <keys/> w dowolnej aplikacji, aby mówić.",
       "hint": "Możesz to później zmienić w Ustawieniach",
       "highFiveLabel": "Piątka",
-      "atLogin": "Uruchamiaj Handy po zalogowaniu",
+      "atLogin": "Uruchamiaj Penny Flow po zalogowaniu",
       "finish": "Gotowe",
       "panel": {
-        "name": "Handy",
+        "name": "Penny Flow",
         "ready": "Gotowe",
         "languages": "Języki",
         "model": "Model mowy",
@@ -327,7 +327,7 @@
     "general": {
       "title": "Ogólne",
       "shortcut": {
-        "title": "Skróty Handy",
+        "title": "Skróty Penny Flow",
         "description": "Skonfiguruj skróty klawiaturowe do uruchamiania nagrywania mowy",
         "loading": "Wczytywanie skrótów...",
         "none": "Brak skonfigurowanych skrótów",
@@ -360,7 +360,7 @@
       },
       "preferredLanguages": {
         "title": "Preferowane języki",
-        "description": "Języki, którymi mówisz. Handy używa ich do polecania modeli.",
+        "description": "Języki, którymi mówisz. Penny Flow używa ich do polecania modeli.",
         "noMatch": "Żaden język nie pasuje do „{{query}}”",
         "weak": "Żaden model nie rozpoznaje jeszcze dobrze: {{languages}}."
       },
@@ -387,17 +387,17 @@
         "fits": "Dla Twoich języków",
         "untested": "Nieprzetestowane"
       },
-      "untestedNote": "Nie testowano z Handy. Mogą działać wolniej lub popełniać więcej błędów.",
+      "untestedNote": "Nie testowano z Penny Flow. Mogą działać wolniej lub popełniać więcej błędów.",
       "untestedHidden_one": "{{count}} kolejny model nie jest dostosowany do dyktowania. Użyj wyszukiwania, aby go znaleźć.",
       "untestedHidden_other": "Kolejne modele nie są dostosowane do dyktowania (liczba: {{count}}). Użyj wyszukiwania, aby je znaleźć.",
-      "emptyYours": "Brak modeli. Wybierz jeden poniżej: zostanie pobrany, a potem Handy go użyje.",
+      "emptyYours": "Brak modeli. Wybierz jeden poniżej: zostanie pobrany, a potem Penny Flow go użyje.",
       "showMore": "Pokaż jeszcze {{count}}",
       "showFewer": "Pokaż mniej",
       "download": "Pobierz i używaj",
       "downloadingThenUse": "{{percent}}% z {{total}}, potem przełączy",
       "loading": "Ładowanie…",
       "deleteAsk": "Usunąć {{name}}? Zwolni to {{size}}.",
-      "deleteAskActive": "Usunąć {{name}}? Handy nie będzie mogło transkrybować, dopóki nie wybierzesz innego modelu.",
+      "deleteAskActive": "Usunąć {{name}}? Penny Flow nie będzie mogło transkrybować, dopóki nie wybierzesz innego modelu.",
       "cancel": "Anuluj",
       "deleteModel": "Usuń {{name}}",
       "cancelDownload": "Zatrzymaj pobieranie {{name}}",
@@ -411,7 +411,7 @@
         "marks": "? jeszcze nie zmierzono. — nie rozumie tego języka."
       },
       "retiredNotice": {
-        "title": "Stare modele nie działają już z Handy",
+        "title": "Stare modele nie działają już z Penny Flow",
         "description": "Zajmują {{size}} na Twoim komputerze.",
         "delete": "Usuń modele",
         "deleted": "Usunięto stare modele",
@@ -419,7 +419,7 @@
       },
       "rescan": {
         "label": "Skanuj ponownie",
-        "tooltip": "Skanuj ponownie w poszukiwaniu modeli dodanych do folderu modeli lub pamięci podręcznej Hugging Face poza Handy"
+        "tooltip": "Skanuj ponownie w poszukiwaniu modeli dodanych do folderu modeli lub pamięci podręcznej Hugging Face poza Penny Flow"
       }
     },
     "languages": {
@@ -485,11 +485,11 @@
       },
       "autostart": {
         "label": "Uruchamiaj przy starcie",
-        "description": "Automatycznie uruchamiaj Handy po zalogowaniu."
+        "description": "Automatycznie uruchamiaj Penny Flow po zalogowaniu."
       },
       "showTrayIcon": {
         "label": "Pokaż ikonę w zasobniku",
-        "description": "Wyświetlaj ikonę Handy w zasobniku systemowym."
+        "description": "Wyświetlaj ikonę Penny Flow w zasobniku systemowym."
       },
       "overlay": {
         "style": {
@@ -720,7 +720,7 @@
       },
       "updateChecks": {
         "label": "Sprawdzaj aktualizacje",
-        "description": "Automatycznie sprawdzaj nowe wersje Handy",
+        "description": "Automatycznie sprawdzaj nowe wersje Penny Flow",
         "lockedDescription": "Wyłączone przez konfigurację systemową (HANDY_DISABLE_UPDATER)"
       },
       "whatsNewPreview": {
@@ -825,7 +825,7 @@
       },
       "keyboardDiagnostic": {
         "title": "Diagnostyka klawiatury",
-        "description": "Sprawdza, czy zdarzenia klawiatury docierają do Handy. Zapisywana jest tylko liczba zdarzeń — nigdy to, które klawisze naciskasz.",
+        "description": "Sprawdza, czy zdarzenia klawiatury docierają do Penny Flow. Zapisywana jest tylko liczba zdarzeń — nigdy to, które klawisze naciskasz.",
         "run": "Uruchom 10-sekundową diagnostykę",
         "running": "Nasłuchiwanie… naciśnij swój skrót kilka razy (np. Option+Space)",
         "secureInputLabel": "Secure Input",
@@ -839,7 +839,7 @@
         "mouse": "Mysz",
         "verdictBlocked": "Secure Input blokuje zdarzenia klawiszy — skróty zawierające zwykły klawisz nie zadziałają, dopóki nie zostanie to rozwiązane.",
         "verdictSuspicious": "Dotarły zdarzenia modyfikatorów, ale żadnych zdarzeń klawiszy — coś tłumi klawisze, mimo że Secure Input jest zgłaszany jako wyłączony. Zgłoś to na GitHubie.",
-        "verdictOk": "Zdarzenia klawiszy docierają do Handy normalnie.",
+        "verdictOk": "Zdarzenia klawiszy docierają do Penny Flow normalnie.",
         "verdictNoEvents": "Nie przechwycono żadnych zdarzeń — czy w trakcie testu naciśnięto jakieś klawisze?",
         "failed": "Diagnostyka nie powiodła się: {{error}}"
       }
@@ -848,15 +848,15 @@
       "title": "O programie",
       "version": {
         "title": "Wersja",
-        "description": "Aktualna wersja Handy"
+        "description": "Aktualna wersja Penny Flow"
       },
       "whatsNewUpdates": {
         "label": "Pokaż nowości",
-        "description": "Pokazuj informacje o wydaniu po aktualizacjach Handy"
+        "description": "Pokazuj informacje o wydaniu po aktualizacjach Penny Flow"
       },
       "appDataDirectory": {
         "title": "Katalog danych aplikacji",
-        "description": "Miejsce, gdzie Handy przechowuje swoje dane"
+        "description": "Miejsce, gdzie Penny Flow przechowuje swoje dane"
       },
       "sourceCode": {
         "title": "Kod źródłowy",
@@ -865,7 +865,7 @@
       },
       "supportDevelopment": {
         "title": "Wspieraj rozwój",
-        "description": "Pomóż nam dalej rozwijać Handy",
+        "description": "Pomóż nam dalej rozwijać Penny Flow",
         "button": "Wesprzyj"
       },
       "acknowledgments": {
@@ -873,7 +873,7 @@
         "ggml": {
           "title": "ggml",
           "description": "Wydajne wykonywanie modelu rozpoznawania mowy Whisper od OpenAI",
-          "details": "Handy używa ggml do szybkiego, lokalnego przetwarzania mowy na tekst. Dzięki niesamowitej pracy Georgi Gerganova i współtwórców."
+          "details": "Penny Flow używa ggml do szybkiego, lokalnego przetwarzania mowy na tekst. Dzięki niesamowitej pracy Georgi Gerganova i współtwórców."
         }
       }
     }
@@ -894,7 +894,7 @@
     "portableUpdateBrowseButton": "Otwórz GitHub Releases"
   },
   "whatsNew": {
-    "title": "Nowości w Handy v{{version}}"
+    "title": "Nowości w Penny Flow v{{version}}"
   },
   "common": {
     "loading": "Wczytywanie...",
@@ -925,11 +925,11 @@
   },
   "appLanguage": {
     "title": "Język aplikacji",
-    "description": "Zmień język interfejsu Handy"
+    "description": "Zmień język interfejsu Penny Flow"
   },
   "theme": {
     "title": "Motyw aplikacji",
-    "description": "Wybierz, czy Handy ma podążać za motywem systemu, czy pozostać jasny lub ciemny",
+    "description": "Wybierz, czy Penny Flow ma podążać za motywem systemu, czy pozostać jasny lub ciemny",
     "options": {
       "system": "System",
       "light": "Jasny",

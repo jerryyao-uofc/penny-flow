@@ -123,6 +123,7 @@ pub async fn update_recording_retention_period(
     let retention_period = match period.as_str() {
         "never" => RecordingRetentionPeriod::Never,
         "preserve_limit" => RecordingRetentionPeriod::PreserveLimit,
+        "hours5" => RecordingRetentionPeriod::Hours5,
         "days3" => RecordingRetentionPeriod::Days3,
         "weeks2" => RecordingRetentionPeriod::Weeks2,
         "months3" => RecordingRetentionPeriod::Months3,

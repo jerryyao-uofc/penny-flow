@@ -3,7 +3,9 @@ use crate::settings::SoundTheme;
 use crate::settings::{self, AppSettings};
 use log::{debug, error, warn};
 use rodio::cpal::traits::HostTrait;
+use rodio::source::{SineWave, Source};
 use rodio::DeviceSinkBuilder;
+use std::time::Duration;
 use std::fs::File;
 use std::io::BufReader;
 use std::path::{Path, PathBuf};
@@ -13,6 +15,43 @@ use tauri::{AppHandle, Manager};
 pub enum SoundType {
     Start,
     Stop,
+}
+
+/// Tones that play whether or not the sound-theme setting is on.
+pub enum Cue {
+    /// Short tick when the transcribe hotkey is pressed.
+    Hotkey,
+    /// Rising pair after a successful DeepSeek rewrite has been pasted.
+    PostProcessDone,
+}
+
+pub fn play_cue(app: &AppHandle, cue: Cue) {
+    let selected_device = settings::get_settings(app).selected_output_device.clone();
+    thread::spawn(move || {
+        let tones: &[(f32, u64)] = match cue {
+            Cue::Hotkey => &[(1760.0, 60)],
+            Cue::PostProcessDone => &[(523.0, 90), (784.0, 170)],
+        };
+        if let Err(e) = play_tones(selected_device, tones) {
+            error!("Failed to play cue: {e}");
+        }
+    });
+}
+
+fn play_tones(
+    selected_device: Option<String>,
+    tones: &[(f32, u64)],
+) -> Result<(), Box<dyn std::error::Error>> {
+    let device_sink = open_output(selected_device)?;
+    let mixer = device_sink.mixer();
+    for (frequency, millis) in tones {
+        let tone = SineWave::new(*frequency)
+            .take_duration(Duration::from_millis(*millis))
+            .amplify(0.16);
+        mixer.add(tone);
+        thread::sleep(Duration::from_millis(*millis + 30));
+    }
+    Ok(())
 }
 
 fn resolve_sound_path(
@@ -95,11 +134,9 @@ fn play_sound_at_path(app: &AppHandle, path: &Path) -> Result<(), Box<dyn std::e
     play_audio_file(path, selected_device, volume)
 }
 
-fn play_audio_file(
-    path: &std::path::Path,
+fn open_output(
     selected_device: Option<String>,
-    volume: f32,
-) -> Result<(), Box<dyn std::error::Error>> {
+) -> Result<rodio::MixerDeviceSink, Box<dyn std::error::Error>> {
     let sink_builder = if let Some(device_name) = selected_device {
         if device_name == "Default" {
             debug!("Using default device");
@@ -123,7 +160,15 @@ fn play_audio_file(
         DeviceSinkBuilder::from_default_device()?
     };
 
-    let device_sink = sink_builder.open_stream()?;
+    Ok(sink_builder.open_stream()?)
+}
+
+fn play_audio_file(
+    path: &std::path::Path,
+    selected_device: Option<String>,
+    volume: f32,
+) -> Result<(), Box<dyn std::error::Error>> {
+    let device_sink = open_output(selected_device)?;
     let mixer = device_sink.mixer();
 
     let file = File::open(path)?;
