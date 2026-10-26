@@ -1,6 +1,7 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
 import {
+  BarChart3,
   Cog,
   Cpu,
   FlaskConical,
@@ -8,6 +9,7 @@ import {
   Info,
   SlidersHorizontal,
   Sparkles,
+  Wand2,
 } from "lucide-react";
 import PennyFlowLogo from "./icons/HandyTextLogo";
 import { useSettings } from "../hooks/useSettings";
@@ -18,6 +20,8 @@ import {
   AboutSettings,
   PostProcessingSettings,
   ModelsSettings,
+  AnalyticsSettings,
+  TextRefineSettings,
 } from "./settings";
 
 export type SidebarSection = keyof typeof SECTIONS_CONFIG;
@@ -68,6 +72,18 @@ export const SECTIONS_CONFIG = {
     icon: Sparkles,
     component: PostProcessingSettings,
     enabled: (settings) => settings?.post_process_enabled ?? false,
+  },
+  textRefine: {
+    labelKey: "sidebar.textRefine",
+    icon: Wand2,
+    component: TextRefineSettings,
+    enabled: () => true,
+  },
+  analytics: {
+    labelKey: "sidebar.analytics",
+    icon: BarChart3,
+    component: AnalyticsSettings,
+    enabled: () => true,
   },
   debug: {
     labelKey: "sidebar.debug",

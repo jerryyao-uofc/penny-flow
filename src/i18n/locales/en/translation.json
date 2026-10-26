@@ -14,6 +14,8 @@
     "models": "Models",
     "advanced": "Advanced",
     "postProcessing": "Post Process",
+    "textRefine": "Text Refine",
+    "analytics": "Analytics",
     "history": "History",
     "debug": "Debug",
     "about": "About"
@@ -345,6 +347,18 @@
           "transcribe_with_post_process": {
             "name": "Post-Processing Hotkey",
             "description": "Optional: A dedicated hotkey that always applies AI post-processing to your transcription."
+          },
+          "refine_1": {
+            "name": "Text Refine 1",
+            "description": "Rewrite the selected text with Text Refine slot 1."
+          },
+          "refine_2": {
+            "name": "Text Refine 2",
+            "description": "Rewrite the selected text with Text Refine slot 2."
+          },
+          "refine_3": {
+            "name": "Text Refine 3",
+            "description": "Rewrite the selected text with Text Refine slot 3."
           }
         },
         "errors": {
@@ -604,6 +618,37 @@
           "traditionalTw": "Traditional (Taiwan)",
           "traditionalHk": "Traditional (Hong Kong)"
         }
+      }
+    },
+    "analytics": {
+      "title": "Lifetime usage",
+      "note": "History still clears after five hours. These totals keep counting across sessions.",
+      "totalUses": "Total uses",
+      "totalUsesHint": "Dictation sessions that produced pasted text",
+      "words": "Words transcribed",
+      "wordsHint": "Whitespace word count of pasted text",
+      "chineseChars": "Chinese characters",
+      "chineseCharsHint": "Han characters in pasted text",
+      "deepseek": "DeepSeek rewrites",
+      "deepseekHint": "Successful post-process rewrites",
+      "refine": "Text Refine uses",
+      "refineHint": "Successful refine hotkey rewrites",
+      "activeDays": "Active days",
+      "activeDaysHint": "Distinct calendar days with at least one use",
+      "weekWords": "This week’s words",
+      "weekWordsHint": "Words pasted in the last 7 days"
+    },
+    "textRefine": {
+      "title": "Text Refine",
+      "description": "Select text, press a refine hotkey, and Penny Flow rewrites it with DeepSeek using that slot’s prompt. Slots are off until you enable them.",
+      "enabled": "Enabled",
+      "enabledHint": "Register this slot’s hotkey",
+      "prompt": "Prompt",
+      "promptHint": "Instructions sent to DeepSeek. Use ${output} for the selected text.",
+      "slots": {
+        "0": { "name": "Formal" },
+        "1": { "name": "Friendly" },
+        "2": { "name": "Technical" }
       }
     },
     "postProcessing": {

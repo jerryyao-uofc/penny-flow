@@ -1,10 +1,20 @@
+use crate::analytics::{AnalyticsManager, DictationAnalytics};
 use crate::managers::{
     history::{HistoryEntry, HistoryManager, PaginatedHistory},
     transcription_jobs::TranscriptionJobManager,
 };
 use std::path::PathBuf;
 use std::sync::Arc;
-use tauri::{AppHandle, State};
+use tauri::{AppHandle, Manager, State};
+
+#[tauri::command]
+#[specta::specta]
+pub fn get_dictation_analytics(app: AppHandle) -> Result<DictationAnalytics, String> {
+    let analytics = app
+        .try_state::<AnalyticsManager>()
+        .ok_or_else(|| "Analytics store is not initialized".to_string())?;
+    Ok(analytics.snapshot())
+}
 
 #[tauri::command]
 #[specta::specta]

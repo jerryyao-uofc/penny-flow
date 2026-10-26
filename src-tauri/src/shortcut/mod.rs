@@ -308,6 +308,9 @@ pub fn resume_all_shortcuts(app: &AppHandle) {
         if id == "transcribe_with_post_process" && !settings.post_process_enabled {
             continue;
         }
+        if crate::settings::text_refine_binding_disabled(&settings, id) {
+            continue;
+        }
         if let Err(e) = register_shortcut(app, binding.clone()) {
             debug!("resume_all_shortcuts: could not register '{}': {}", id, e);
         }
@@ -498,6 +501,9 @@ fn register_all_shortcuts_for_implementation(
 
         // Skip post-processing shortcut when the feature is disabled
         if id == "transcribe_with_post_process" && !current_settings.post_process_enabled {
+            continue;
+        }
+        if settings::text_refine_binding_disabled(&current_settings, id) {
             continue;
         }
 
@@ -1081,6 +1087,51 @@ pub fn change_post_process_enabled_setting(app: AppHandle, enabled: bool) -> Res
     }
 
     crate::secure_input::reconcile_fallback(&app);
+    Ok(())
+}
+
+#[tauri::command]
+#[specta::specta]
+pub fn change_text_refine_slot_setting(
+    app: AppHandle,
+    slot_index: u32,
+    enabled: Option<bool>,
+    name: Option<String>,
+    prompt: Option<String>,
+) -> Result<(), String> {
+    let index = slot_index as usize;
+    if index >= 3 {
+        return Err("Text refine slot index must be 0, 1, or 2".into());
+    }
+    let mut settings = settings::get_settings(&app);
+    if settings.text_refine_slots.len() != 3 {
+        settings.text_refine_slots = settings::get_default_settings().text_refine_slots;
+    }
+    let slot = settings
+        .text_refine_slots
+        .get_mut(index)
+        .ok_or_else(|| "Text refine slot missing".to_string())?;
+    if let Some(enabled) = enabled {
+        slot.enabled = enabled;
+    }
+    if let Some(name) = name {
+        slot.name = name;
+    }
+    if let Some(prompt) = prompt {
+        slot.prompt = prompt;
+    }
+    let binding_id = format!("refine_{}", index + 1);
+    let binding = settings.bindings.get(&binding_id).cloned();
+    let now_enabled = settings.text_refine_slots[index].enabled;
+    settings::write_settings(&app, settings);
+
+    if let Some(binding) = binding {
+        if now_enabled {
+            let _ = register_shortcut(&app, binding);
+        } else {
+            let _ = unregister_shortcut(&app, binding);
+        }
+    }
     Ok(())
 }
 

@@ -47,6 +47,40 @@ fn with_enigo<T: Send + 'static>(
         .map_err(|_| "Main thread dropped the input request".to_string())?
 }
 
+/// Copy the current selection via Cmd/Ctrl+C and return the clipboard text.
+/// Restores the previous clipboard afterward. Call off the main thread.
+pub fn copy_selection(app_handle: &AppHandle) -> Result<String, String> {
+    let _paste = PASTE_LOCK.lock().unwrap_or_else(PoisonError::into_inner);
+    let settings = get_settings(app_handle);
+    let delay_ms = settings.paste_delay_ms.max(40);
+
+    let clipboard = app_handle.clipboard();
+    let saved_text = clipboard.read_text().ok().filter(|t| !t.is_empty());
+
+    with_enigo(app_handle, move |enigo| {
+        input::send_copy_ctrl_c(enigo, delay_ms)
+    })?;
+
+    std::thread::sleep(Duration::from_millis(delay_ms.saturating_add(40)));
+
+    let selected = clipboard
+        .read_text()
+        .map_err(|e| format!("Failed to read selection from clipboard: {e}"))?
+        .trim()
+        .to_string();
+
+    if let Some(previous) = saved_text {
+        let _ = write_text_to_clipboard(app_handle, &previous);
+    } else {
+        let _ = clipboard.clear();
+    }
+
+    if selected.is_empty() {
+        return Err("No text was selected".into());
+    }
+    Ok(selected)
+}
+
 fn write_text_to_clipboard(app_handle: &AppHandle, text: &str) -> Result<(), String> {
     #[cfg(target_os = "linux")]
     if is_wayland() && is_wl_copy_available() {

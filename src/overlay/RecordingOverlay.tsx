@@ -30,6 +30,7 @@ const DEEPSEEK_LABEL = {
   rewrote: "DeepSeek rewrote this",
   unchanged: "DeepSeek replied, unchanged",
   failed: "DeepSeek call failed",
+  refined: "Refined",
 } as const;
 
 const RecordingOverlay: React.FC = () => {
@@ -70,7 +71,7 @@ const RecordingOverlay: React.FC = () => {
   const [overflowing, setOverflowing] = useState(false);
   // Testing signal: DeepSeek was called, and whether the reply changed the text.
   const [deepseek, setDeepseek] = useState<
-    "calling" | "rewrote" | "unchanged" | "failed" | null
+    "calling" | "rewrote" | "unchanged" | "failed" | "refined" | null
   >(null);
 
   const smoothedLevelsRef = useRef<number[]>(Array(16).fill(0));
@@ -132,7 +133,8 @@ const RecordingOverlay: React.FC = () => {
           status === "calling" ||
           status === "rewrote" ||
           status === "unchanged" ||
-          status === "failed"
+          status === "failed" ||
+          status === "refined"
         ) {
           setDeepseek(status);
         }

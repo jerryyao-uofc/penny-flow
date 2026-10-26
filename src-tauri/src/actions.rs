@@ -184,9 +184,95 @@ fn word_count(text: &str) -> usize {
         .count()
 }
 
-/// Dictation longer than five words is rewritten automatically.
+/// Han ideographs only — used for the Chinese auto-rewrite gate.
+fn is_han_char(ch: char) -> bool {
+    matches!(
+        ch,
+        '\u{3400}'..='\u{4DBF}' // CJK Extension A
+            | '\u{4E00}'..='\u{9FFF}' // CJK Unified
+            | '\u{F900}'..='\u{FAFF}' // CJK Compatibility
+            | '\u{20000}'..='\u{2A6DF}' // Extension B
+            | '\u{2A700}'..='\u{2B73F}' // Extension C
+            | '\u{2B740}'..='\u{2B81F}' // Extension D
+            | '\u{2B820}'..='\u{2CEAF}' // Extension E
+            | '\u{30000}'..='\u{3134F}' // Extension G
+    )
+}
+
+fn han_char_count(text: &str) -> usize {
+    text.chars().filter(|ch| is_han_char(*ch)).count()
+}
+
+/// English: more than five words. Chinese: more than six Han characters.
 fn transcription_needs_post_process(text: &str) -> bool {
-    word_count(text) > 5
+    word_count(text) > 5 || han_char_count(text) > 6
+}
+
+/// Shared LLM rewrite used by dictation post-process and Text Refine.
+async fn rewrite_text_with_prompt(
+    app: &AppHandle,
+    settings: &AppSettings,
+    transcription: &str,
+    prompt: &str,
+) -> Option<String> {
+    if is_blank_transcription(transcription) || prompt.trim().is_empty() {
+        return None;
+    }
+
+    let provider = match settings.active_post_process_provider().cloned() {
+        Some(provider) => provider,
+        None => {
+            debug!("Rewrite skipped because no provider is selected");
+            return None;
+        }
+    };
+
+    let model = settings
+        .post_process_models
+        .get(&provider.id)
+        .cloned()
+        .unwrap_or_default();
+
+    if model.trim().is_empty() {
+        debug!(
+            "Rewrite skipped because provider '{}' has no model configured",
+            provider.id
+        );
+        return None;
+    }
+
+    let api_key = settings
+        .post_process_api_keys
+        .get(&provider.id)
+        .cloned()
+        .unwrap_or_default();
+
+    if provider.id != APPLE_INTELLIGENCE_PROVIDER_ID && api_key.trim().is_empty() {
+        debug!(
+            "Rewrite skipped because provider '{}' has no API key",
+            provider.id
+        );
+        return None;
+    }
+
+    debug!(
+        "Starting LLM rewrite with provider '{}' (model: {})",
+        provider.id, model
+    );
+
+    let mut deepseek_signaled = false;
+    let mut deepseek_succeeded = false;
+    rewrite_text_with_provider(
+        app,
+        &provider,
+        &api_key,
+        &model,
+        transcription,
+        prompt,
+        &mut deepseek_signaled,
+        &mut deepseek_succeeded,
+    )
+    .await
 }
 
 async fn post_process_transcription(
@@ -251,11 +337,6 @@ async fn post_process_transcription(
         return None;
     }
 
-    debug!(
-        "Starting LLM post-processing with provider '{}' (model: {})",
-        provider.id, model
-    );
-
     let api_key = settings
         .post_process_api_keys
         .get(&provider.id)
@@ -270,6 +351,30 @@ async fn post_process_transcription(
         return None;
     }
 
+    rewrite_text_with_provider(
+        app,
+        &provider,
+        &api_key,
+        &model,
+        transcription,
+        &prompt,
+        deepseek_signaled,
+        deepseek_succeeded,
+    )
+    .await
+}
+
+async fn rewrite_text_with_provider(
+    app: &AppHandle,
+    provider: &crate::settings::PostProcessProvider,
+    api_key: &str,
+    model: &str,
+    transcription: &str,
+    prompt: &str,
+    deepseek_signaled: &mut bool,
+    deepseek_succeeded: &mut bool,
+) -> Option<String> {
+
     // Ask these providers to skip reasoning/thinking — post-processing rarely
     // benefits from it and it adds seconds of latency. llm_client picks the
     // field the endpoint understands and retries without it if rejected.
@@ -278,7 +383,7 @@ async fn post_process_transcription(
     if provider.supports_structured_output {
         debug!("Using structured outputs for provider '{}'", provider.id);
 
-        let system_prompt = build_system_prompt(&prompt);
+        let system_prompt = build_system_prompt(prompt);
         let user_content = transcription.to_string();
 
         // Handle Apple Intelligence separately since it uses native Swift APIs
@@ -339,9 +444,9 @@ async fn post_process_transcription(
         });
 
         match crate::llm_client::send_chat_completion_with_schema(
-            &provider,
-            api_key.clone(),
-            &model,
+            provider,
+            api_key.to_string(),
+            model,
             user_content,
             Some(system_prompt),
             Some(json_schema),
@@ -392,24 +497,50 @@ async fn post_process_transcription(
         }
     }
 
-    // Legacy mode: Replace ${output} variable in the prompt with the actual text
-    let processed_prompt = prompt.replace("${output}", transcription);
-    debug!("Processed prompt length: {} chars", processed_prompt.len());
-
     let deepseek = provider.id == "deepseek";
     if deepseek {
         emit_deepseek_status(app, "calling");
         *deepseek_signaled = true;
     }
 
-    match crate::llm_client::send_chat_completion(
-        &provider,
-        api_key,
-        &model,
-        processed_prompt,
-        disable_reasoning,
-    )
-    .await
+    // DeepSeek: stable system instructions + transcript-only user message so
+    // the instruction prefix can hit the provider's prompt cache.
+    let completion = if deepseek {
+        let system_prompt = prompt
+            .replace("<transcript>\n${output}\n</transcript>", "")
+            .replace("${output}", "")
+            .trim()
+            .to_string();
+        let user_content = format!("<transcript>\n{transcription}\n</transcript>");
+        debug!(
+            "DeepSeek cache-friendly request: system {} chars, user {} chars",
+            system_prompt.len(),
+            user_content.len()
+        );
+        crate::llm_client::send_chat_completion_with_schema(
+            provider,
+            api_key.to_string(),
+            model,
+            user_content,
+            Some(system_prompt),
+            None,
+            disable_reasoning,
+        )
+        .await
+    } else {
+        let processed_prompt = prompt.replace("${output}", transcription);
+        debug!("Processed prompt length: {} chars", processed_prompt.len());
+        crate::llm_client::send_chat_completion(
+            provider,
+            api_key.to_string(),
+            model,
+            processed_prompt,
+            disable_reasoning,
+        )
+        .await
+    };
+
+    match completion
     {
         Ok(Some(content)) => {
             let content = strip_invisible_chars(strip_think_block(&content));
@@ -923,6 +1054,7 @@ impl ShortcutAction for TranscribeAction {
                                             return;
                                         }
 
+                                        let pasted_for_stats = final_text.clone();
                                         let outcome =
                                             match utils::paste(final_text, ah_clone.clone()) {
                                                 Ok(()) => {
@@ -938,6 +1070,16 @@ impl ShortcutAction for TranscribeAction {
                                                     TranscriptionOutcome::Failed
                                                 }
                                             };
+                                        if matches!(outcome, TranscriptionOutcome::Typed) {
+                                            if let Some(analytics) = ah_clone
+                                                .try_state::<crate::analytics::AnalyticsManager>()
+                                            {
+                                                analytics.record_dictation(
+                                                    &pasted_for_stats,
+                                                    deepseek_succeeded,
+                                                );
+                                            }
+                                        }
                                         if deepseek_succeeded
                                             && matches!(outcome, TranscriptionOutcome::Typed)
                                             && RECORDING_SESSION.load(Ordering::SeqCst) == session
@@ -1036,6 +1178,93 @@ impl ShortcutAction for TranscribeAction {
     }
 }
 
+/// Rewrite selected text with a Text Refine prompt (Option+1/2/3).
+struct RefineAction {
+    slot: usize,
+}
+
+impl ShortcutAction for RefineAction {
+    fn start(&self, app: &AppHandle, binding_id: &str, _shortcut_str: &str) {
+        let slot = self.slot;
+        let app = app.clone();
+        let binding_id = binding_id.to_string();
+        std::thread::Builder::new()
+            .name(format!("refine-{slot}"))
+            .spawn(move || {
+                let settings = get_settings(&app);
+                let Some(slot_cfg) = settings.text_refine_slots.get(slot).cloned() else {
+                    error!("Text refine slot {slot} missing");
+                    return;
+                };
+                if !slot_cfg.enabled || slot_cfg.prompt.trim().is_empty() {
+                    debug!("Text refine slot {slot} disabled or empty");
+                    return;
+                }
+
+                show_processing_overlay(&app);
+                set_tray_state(&app, TrayIconState::Transcribing);
+
+                let selected = match utils::copy_selection(&app) {
+                    Ok(text) => text,
+                    Err(e) => {
+                        error!("Text refine copy failed ({binding_id}): {e}");
+                        utils::hide_recording_overlay(&app);
+                        set_tray_state(&app, TrayIconState::Idle);
+                        return;
+                    }
+                };
+
+                let rt = tokio::runtime::Builder::new_current_thread()
+                    .enable_all()
+                    .build();
+                let rewritten = match rt {
+                    Ok(runtime) => runtime.block_on(rewrite_text_with_prompt(
+                        &app,
+                        &settings,
+                        &selected,
+                        &slot_cfg.prompt,
+                    )),
+                    Err(e) => {
+                        error!("Failed to start refine runtime: {e}");
+                        None
+                    }
+                };
+
+                let Some(rewritten) = rewritten.filter(|t| !t.trim().is_empty()) else {
+                    error!("Text refine produced no text");
+                    emit_deepseek_status(&app, "failed");
+                    std::thread::sleep(std::time::Duration::from_millis(900));
+                    utils::hide_recording_overlay(&app);
+                    set_tray_state(&app, TrayIconState::Idle);
+                    return;
+                };
+
+                match utils::paste(rewritten.clone(), app.clone()) {
+                    Ok(()) => {
+                        emit_deepseek_status(&app, "refined");
+                        play_cue(&app, Cue::PostProcessDone);
+                        if let Some(analytics) =
+                            app.try_state::<crate::analytics::AnalyticsManager>()
+                        {
+                            analytics.record_text_refine(&rewritten);
+                        }
+                        std::thread::sleep(std::time::Duration::from_millis(1600));
+                    }
+                    Err(e) => {
+                        error!("Text refine paste failed: {e}");
+                        emit_deepseek_status(&app, "failed");
+                        std::thread::sleep(std::time::Duration::from_millis(900));
+                    }
+                }
+                utils::hide_recording_overlay(&app);
+                set_tray_state(&app, TrayIconState::Idle);
+            })
+            .ok();
+    }
+
+    fn stop(&self, _app: &AppHandle, _binding_id: &str, _shortcut_str: &str) {}
+}
+
 // Cancel Action
 struct CancelAction;
 
@@ -1093,6 +1322,18 @@ pub static ACTION_MAP: Lazy<HashMap<String, Arc<dyn ShortcutAction>>> = Lazy::ne
         "test".to_string(),
         Arc::new(TestAction) as Arc<dyn ShortcutAction>,
     );
+    map.insert(
+        "refine_1".to_string(),
+        Arc::new(RefineAction { slot: 0 }) as Arc<dyn ShortcutAction>,
+    );
+    map.insert(
+        "refine_2".to_string(),
+        Arc::new(RefineAction { slot: 1 }) as Arc<dyn ShortcutAction>,
+    );
+    map.insert(
+        "refine_3".to_string(),
+        Arc::new(RefineAction { slot: 2 }) as Arc<dyn ShortcutAction>,
+    );
     map
 });
 
@@ -1100,7 +1341,7 @@ pub static ACTION_MAP: Lazy<HashMap<String, Arc<dyn ShortcutAction>>> = Lazy::ne
 mod tests {
     use super::{
         complete_unless_cancelled, is_blank_transcription, should_use_streaming_overlay,
-        strip_think_block, transcription_needs_post_process, word_count,
+        han_char_count, strip_think_block, transcription_needs_post_process, word_count,
     };
     use crate::settings::OverlayStyle;
     use std::future;
@@ -1183,6 +1424,18 @@ mod tests {
         assert!(!transcription_needs_post_process("one two three four five"));
         assert!(transcription_needs_post_process(
             "one two three four five six"
+        ));
+    }
+
+    #[test]
+    fn post_processing_starts_after_six_han_characters() {
+        assert_eq!(han_char_count("你好世界你好"), 6);
+        assert_eq!(han_char_count("你好世界你好啊"), 7);
+        assert!(!transcription_needs_post_process("你好世界你好"));
+        assert!(transcription_needs_post_process("你好世界你好啊"));
+        // Mixed: six English words still triggers even with few Han chars.
+        assert!(transcription_needs_post_process(
+            "please rewrite this Chinese 你好 note"
         ));
     }
 

@@ -94,6 +94,14 @@ pub struct LLMPrompt {
     pub prompt: String,
 }
 
+/// One Text Refine hotkey: rewrite selected text with a user prompt.
+#[derive(Serialize, Deserialize, Debug, Clone, Type)]
+pub struct TextRefineSlot {
+    pub enabled: bool,
+    pub name: String,
+    pub prompt: String,
+}
+
 /// Request format a post-processing endpoint speaks. Built-in providers have a
 /// fixed format; only the custom provider lets the user change it.
 #[derive(Serialize, Deserialize, Debug, Clone, Copy, Default, PartialEq, Eq, Type)]
@@ -544,13 +552,16 @@ pub struct AppSettings {
     /// `overlay_position` (position `none` → style `None`).
     #[serde(default = "default_overlay_style")]
     pub overlay_style: OverlayStyle,
+    /// Three optional refine hotkeys (Option+1/2/3). Off until enabled.
+    #[serde(default = "default_text_refine_slots")]
+    pub text_refine_slots: Vec<TextRefineSlot>,
 }
 
 fn default_model() -> String {
     "".to_string()
 }
 
-const CURRENT_SETTINGS_SCHEMA_VERSION: u32 = 5;
+const CURRENT_SETTINGS_SCHEMA_VERSION: u32 = 6;
 
 /// Prompt applied after every dictation once a DeepSeek API key is saved.
 pub const MESSAGE_REWRITE_PROMPT_ID: &str = "message_rewrite";
@@ -824,8 +835,53 @@ fn default_model_for_provider(provider_id: &str) -> String {
 /// copy that still matches this, and leaves a prompt the user edited alone.
 const PREVIOUS_MESSAGE_REWRITE_PROMPT: &str = "The user message is a speech transcript. Rewrite it so it is ready to send.\n\nKeep the speaker's meaning, order, and sentence structure. Fix grammar, spelling, punctuation, and wording that is unclear. Repair a phrase only when it is obviously unfinished or illogical. Do not add ideas, do not summarize, and do not answer questions.\n\nIf the speaker says this is a text, write it as a text message. If the speaker says this is an email, write it as an email, with a greeting or sign-off only when they dictated one, and no subject line unless they dictated one. Drop a phrase that only names that setting, such as \"this is a text\" or \"this is an email\", when it is an instruction rather than part of the message.\n\nKeep the original language. If the transcript is empty, output a single space. Return only the rewritten message, with no label and no quotes.\n\n<transcript>\n${output}\n</transcript>";
 
+/// Schema 5 prompt. Schema 6 migrates an unedited copy to the mixed-language text.
+const PREVIOUS_MESSAGE_REWRITE_PROMPT_V5: &str = "The user message is a speech transcript. Rewrite it into the message they meant to send.\n\nMake the result concise, clean, and well structured. Turn fragments into fully grammatical sentences: fix grammar, spelling, punctuation, capitalization, and agreement. You may join or split sentences so the result reads cleanly. Do not add ideas, do not drop a detail they meant, and do not answer questions.\n\nRemove filler and words that carry no meaning. Drop \"um\", \"uh\", \"er\", \"ah\", \"like\" when it is only a filler, \"I mean\", \"well\", \"yeah\", \"you know\", \"sort of\", \"kind of\", and \"so\" when it only stalls. Drop repeated false starts. Keep a word like \"yeah\" or \"well\" when it is an actual answer or changes the meaning.\n\nIf the speaker says this is a text, write it as a text message. If the speaker says this is an email, write it as an email, with a greeting or sign-off only when they dictated one, and no subject line unless they dictated one. Drop a phrase that only names that setting, such as \"this is a text\" or \"this is an email\", when it is an instruction rather than part of the message.\n\nKeep the original language. If the transcript is empty, output a single space. Return only the rewritten message, with no label and no quotes.\n\n<transcript>\n${output}\n</transcript>";
+
 fn message_rewrite_prompt_text() -> &'static str {
-    "The user message is a speech transcript. Rewrite it into the message they meant to send.\n\nMake the result concise, clean, and well structured. Turn fragments into fully grammatical sentences: fix grammar, spelling, punctuation, capitalization, and agreement. You may join or split sentences so the result reads cleanly. Do not add ideas, do not drop a detail they meant, and do not answer questions.\n\nRemove filler and words that carry no meaning. Drop \"um\", \"uh\", \"er\", \"ah\", \"like\" when it is only a filler, \"I mean\", \"well\", \"yeah\", \"you know\", \"sort of\", \"kind of\", and \"so\" when it only stalls. Drop repeated false starts. Keep a word like \"yeah\" or \"well\" when it is an actual answer or changes the meaning.\n\nIf the speaker says this is a text, write it as a text message. If the speaker says this is an email, write it as an email, with a greeting or sign-off only when they dictated one, and no subject line unless they dictated one. Drop a phrase that only names that setting, such as \"this is a text\" or \"this is an email\", when it is an instruction rather than part of the message.\n\nKeep the original language. If the transcript is empty, output a single space. Return only the rewritten message, with no label and no quotes.\n\n<transcript>\n${output}\n</transcript>"
+    "The user message is a speech transcript. Rewrite it into the message they meant to send.\n\nMake the result concise, clean, and well structured. Turn fragments into fully grammatical sentences: fix grammar, spelling, punctuation, capitalization, and agreement. You may join or split sentences so the result reads cleanly. Do not add ideas, do not drop a detail they meant, and do not answer questions.\n\nRemove filler and words that carry no meaning. In English, drop \"um\", \"uh\", \"er\", \"ah\", \"like\" when it is only a filler, \"I mean\", \"well\", \"yeah\", \"you know\", \"sort of\", \"kind of\", and \"so\" when it only stalls. In Chinese, drop stalls such as \"嗯\", \"啊\", \"呃\", \"那个\", \"就是\", \"然后\" when they only fill a pause. Drop repeated false starts. Keep a word when it is an actual answer or changes the meaning.\n\nIf the transcript mixes Chinese and English (or other languages), preserve both. Do not translate Chinese into English or English into Chinese. Clean each language in place.\n\nIf the speaker says this is a text, write it as a text message. If the speaker says this is an email, write it as an email, with a greeting or sign-off only when they dictated one, and no subject line unless they dictated one. Drop a phrase that only names that setting, such as \"this is a text\" or \"this is an email\", when it is an instruction rather than part of the message.\n\nKeep the original language(s). If the transcript is empty, output a single space. Return only the rewritten message, with no label and no quotes.\n\n<transcript>\n${output}\n</transcript>"
+}
+
+fn default_text_refine_slots() -> Vec<TextRefineSlot> {
+    let mixed = "If the text mixes Chinese and English, preserve both. Do not translate one language into the other.";
+    vec![
+        TextRefineSlot {
+            enabled: false,
+            name: "Formal".to_string(),
+            prompt: format!(
+                "Rewrite the selected text so it is extremely formal, polished, and professional. Fix grammar and structure. {mixed} Return only the rewritten text.\n\n<transcript>\n${{output}}\n</transcript>"
+            ),
+        },
+        TextRefineSlot {
+            enabled: false,
+            name: "Friendly".to_string(),
+            prompt: format!(
+                "Rewrite the selected text so it is extremely friendly, casual, and energetic. Keep the meaning. {mixed} Return only the rewritten text.\n\n<transcript>\n${{output}}\n</transcript>"
+            ),
+        },
+        TextRefineSlot {
+            enabled: false,
+            name: "Technical".to_string(),
+            prompt: format!(
+                "Rewrite the selected text with technical sophistication: precise, clear, and expert. Keep the meaning. {mixed} Return only the rewritten text.\n\n<transcript>\n${{output}}\n</transcript>"
+            ),
+        },
+    ]
+}
+
+/// Whether a refine_* binding should stay unregistered.
+pub fn text_refine_binding_disabled(settings: &AppSettings, binding_id: &str) -> bool {
+    let index = match binding_id {
+        "refine_1" => 0,
+        "refine_2" => 1,
+        "refine_3" => 2,
+        _ => return false,
+    };
+    !settings
+        .text_refine_slots
+        .get(index)
+        .map(|slot| slot.enabled)
+        .unwrap_or(false)
 }
 
 fn message_rewrite_prompt() -> LLMPrompt {
@@ -1012,6 +1068,28 @@ pub fn get_default_settings() -> AppSettings {
         },
     );
 
+    #[cfg(target_os = "macos")]
+    let refine_shortcuts = ["option+1", "option+2", "option+3"];
+    #[cfg(not(target_os = "macos"))]
+    let refine_shortcuts = ["alt+1", "alt+2", "alt+3"];
+    let refine_names = ["Formal", "Friendly", "Technical"];
+    for (i, shortcut) in refine_shortcuts.iter().enumerate() {
+        let id = format!("refine_{}", i + 1);
+        bindings.insert(
+            id.clone(),
+            ShortcutBinding {
+                id,
+                name: format!("Text Refine — {}", refine_names[i]),
+                description: format!(
+                    "Rewrites the selected text with the {} refine prompt.",
+                    refine_names[i].to_lowercase()
+                ),
+                default_binding: shortcut.to_string(),
+                current_binding: shortcut.to_string(),
+            },
+        );
+    }
+
     AppSettings {
         settings_schema_version: default_settings_schema_version(),
         bindings,
@@ -1077,6 +1155,7 @@ pub fn get_default_settings() -> AppSettings {
         vad_backend: VadBackend::default(),
         long_form_chunking: default_long_form_chunking(),
         overlay_style: default_overlay_style(),
+        text_refine_slots: default_text_refine_slots(),
     }
 }
 
@@ -1350,8 +1429,27 @@ fn apply_settings_migrations(
             .find(|prompt| prompt.id == MESSAGE_REWRITE_PROMPT_ID)
         {
             if prompt.prompt == PREVIOUS_MESSAGE_REWRITE_PROMPT {
+                prompt.prompt = PREVIOUS_MESSAGE_REWRITE_PROMPT_V5.to_string();
+            }
+        }
+        settings.settings_schema_version = CURRENT_SETTINGS_SCHEMA_VERSION;
+        updated = true;
+    }
+    if stored_schema_version < 6 {
+        // Mixed Chinese/English preserve + Chinese fillers. Hand-edited prompts stay.
+        if let Some(prompt) = settings
+            .post_process_prompts
+            .iter_mut()
+            .find(|prompt| prompt.id == MESSAGE_REWRITE_PROMPT_ID)
+        {
+            if prompt.prompt == PREVIOUS_MESSAGE_REWRITE_PROMPT_V5
+                || prompt.prompt == PREVIOUS_MESSAGE_REWRITE_PROMPT
+            {
                 prompt.prompt = message_rewrite_prompt_text().to_string();
             }
+        }
+        if settings.text_refine_slots.len() != 3 {
+            settings.text_refine_slots = default_text_refine_slots();
         }
         settings.settings_schema_version = CURRENT_SETTINGS_SCHEMA_VERSION;
         updated = true;
