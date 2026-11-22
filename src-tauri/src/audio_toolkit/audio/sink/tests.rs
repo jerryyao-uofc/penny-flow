@@ -137,6 +137,17 @@ fn a_recording_stopped_before_any_audio_is_not_silent_input() {
 }
 
 #[test]
+fn audible_audio_that_vad_drops_is_still_transcribed() {
+    let mut h = harness(VadPolicy::Offline);
+    // First sample is zero, so the scripted detector calls this noise.
+    let frame = [0.0, 0.2, 0.2, 0.2];
+    h.sink.process_chunk(chunk(&frame, FRAME));
+    let captured = h.sink.finish();
+    assert_eq!(captured.samples, frame);
+    assert!(!captured.input_silent);
+}
+
+#[test]
 fn sound_counts_even_when_vad_drops_it() {
     let mut h = harness(VadPolicy::Offline);
     // Noise to the detector (its first sample is zero), but not silence.

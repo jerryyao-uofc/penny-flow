@@ -337,13 +337,15 @@
   align-items: center;
   gap: 3px;
   padding-right: 8px;
-  height: 18px;
+  /* Match WAVE_MAX_PX in RecordingOverlay.tsx. Taller than the old 18px track
+     so speech reads clearly; still shorter than the 40px control row. */
+  height: 26px;
   flex: none;
 }
 .swave i {
   width: 4px;
   min-height: 3px;
-  max-height: 18px;
+  max-height: 26px;
   border-radius: 2px;
   background: var(--s-accent);
   transition:

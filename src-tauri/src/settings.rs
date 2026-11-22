@@ -1,4 +1,3 @@
-use crate::utils;
 use log::{debug, warn};
 use serde::de::{self, Visitor};
 use serde::{Deserialize, Deserializer, Serialize};
@@ -99,6 +98,14 @@ pub struct LLMPrompt {
 pub struct TextRefineSlot {
     pub enabled: bool,
     pub name: String,
+    pub prompt: String,
+}
+
+/// Saved text inserted verbatim by a quick-paste hotkey.
+/// An empty or whitespace-only prompt does nothing; the hotkey stays registered.
+#[derive(Serialize, Deserialize, Debug, Clone, Type, Default)]
+pub struct QuickPasteSlot {
+    #[serde(default)]
     pub prompt: String,
 }
 
@@ -555,6 +562,9 @@ pub struct AppSettings {
     /// Three optional refine hotkeys (Option+1/2/3). Off until enabled.
     #[serde(default = "default_text_refine_slots")]
     pub text_refine_slots: Vec<TextRefineSlot>,
+    /// Three canned strings pasted by quick_paste_1/2/3. Empty prompts are a no-op.
+    #[serde(default = "default_quick_paste_slots")]
+    pub quick_paste_slots: Vec<QuickPasteSlot>,
 }
 
 fn default_model() -> String {
@@ -869,6 +879,27 @@ fn default_text_refine_slots() -> Vec<TextRefineSlot> {
     ]
 }
 
+fn default_quick_paste_slots() -> Vec<QuickPasteSlot> {
+    vec![
+        QuickPasteSlot::default(),
+        QuickPasteSlot::default(),
+        QuickPasteSlot::default(),
+    ]
+}
+
+/// Pad a short or over-long slot list back to the three fixed prompts.
+pub(crate) fn ensure_quick_paste_slots(settings: &mut AppSettings) -> bool {
+    if settings.quick_paste_slots.len() == 3 {
+        return false;
+    }
+    let mut slots = default_quick_paste_slots();
+    for (slot, saved) in slots.iter_mut().zip(settings.quick_paste_slots.iter()) {
+        slot.prompt.clone_from(&saved.prompt);
+    }
+    settings.quick_paste_slots = slots;
+    true
+}
+
 /// Whether a refine_* binding should stay unregistered.
 pub fn text_refine_binding_disabled(settings: &AppSettings, binding_id: &str) -> bool {
     let index = match binding_id {
@@ -1090,6 +1121,25 @@ pub fn get_default_settings() -> AppSettings {
         );
     }
 
+    // Quick paste inserts a saved string. macOS: Option+S/D/F. Elsewhere: Ctrl+Alt+S/D/F.
+    #[cfg(target_os = "macos")]
+    let quick_paste_shortcuts = ["option+s", "option+d", "option+f"];
+    #[cfg(not(target_os = "macos"))]
+    let quick_paste_shortcuts = ["ctrl+alt+s", "ctrl+alt+d", "ctrl+alt+f"];
+    for (i, shortcut) in quick_paste_shortcuts.iter().enumerate() {
+        let id = format!("quick_paste_{}", i + 1);
+        bindings.insert(
+            id.clone(),
+            ShortcutBinding {
+                id,
+                name: format!("Quick Paste {}", i + 1),
+                description: "Pastes this saved text at the cursor.".to_string(),
+                default_binding: shortcut.to_string(),
+                current_binding: shortcut.to_string(),
+            },
+        );
+    }
+
     AppSettings {
         settings_schema_version: default_settings_schema_version(),
         bindings,
@@ -1156,6 +1206,7 @@ pub fn get_default_settings() -> AppSettings {
         long_form_chunking: default_long_form_chunking(),
         overlay_style: default_overlay_style(),
         text_refine_slots: default_text_refine_slots(),
+        quick_paste_slots: default_quick_paste_slots(),
     }
 }
 
@@ -1238,7 +1289,9 @@ pub fn get_settings(app: &AppHandle) -> AppSettings {
         default_settings
     };
 
-    if ensure_post_process_defaults(&mut settings) {
+    let mut persist = ensure_post_process_defaults(&mut settings);
+    persist |= ensure_quick_paste_slots(&mut settings);
+    if persist {
         store.set("settings", serde_json::to_value(&settings).unwrap());
     }
 
@@ -1518,13 +1571,10 @@ fn os_languages() -> &'static [String] {
     }
 }
 
-/// Update checks are forced off (without touching the persisted setting) when
-/// `HANDY_DISABLE_UPDATER` is set — e.g. by the Nix package, since self-update
-/// can't work against an immutable /nix/store install.
+/// Penny Flow never installs upstream Handy releases. That download replaces
+/// this app. The stored preference is left alone; checks stay off either way.
 pub fn update_checks_forced_disabled() -> bool {
-    use std::sync::OnceLock;
-    static IS_UPDATER_DISABLED: OnceLock<bool> = OnceLock::new();
-    *IS_UPDATER_DISABLED.get_or_init(|| utils::env_flag_enabled("HANDY_DISABLE_UPDATER"))
+    true
 }
 
 /// Effective updater state: the user's stored preference, overridden to `false`
@@ -1852,6 +1902,61 @@ mod tests {
             settings.settings_schema_version,
             CURRENT_SETTINGS_SCHEMA_VERSION
         );
+    }
+
+    #[test]
+    fn quick_paste_defaults_are_three_empty_slots_with_distinct_hotkeys() {
+        let settings = get_default_settings();
+        assert_eq!(settings.quick_paste_slots.len(), 3);
+        assert!(settings
+            .quick_paste_slots
+            .iter()
+            .all(|slot| slot.prompt.is_empty()));
+
+        let expected = if cfg!(target_os = "macos") {
+            ["option+s", "option+d", "option+f"]
+        } else {
+            ["ctrl+alt+s", "ctrl+alt+d", "ctrl+alt+f"]
+        };
+        let mut seen = std::collections::HashSet::new();
+        for binding in settings.bindings.values() {
+            assert!(
+                seen.insert(binding.default_binding.clone()),
+                "duplicate default binding {}",
+                binding.default_binding
+            );
+        }
+        for (i, shortcut) in expected.iter().enumerate() {
+            let id = format!("quick_paste_{}", i + 1);
+            let binding = &settings.bindings[&id];
+            assert_eq!(binding.id, id);
+            assert_eq!(binding.default_binding, *shortcut);
+            assert_eq!(binding.current_binding, *shortcut);
+        }
+    }
+
+    #[test]
+    fn missing_quick_paste_slots_default_to_three_empty_prompts() {
+        let settings: AppSettings =
+            serde_json::from_value(serde_json::json!({})).expect("partial store should parse");
+        assert_eq!(settings.quick_paste_slots.len(), 3);
+        assert!(settings
+            .quick_paste_slots
+            .iter()
+            .all(|slot| slot.prompt.is_empty()));
+    }
+
+    #[test]
+    fn short_quick_paste_slot_list_is_padded_without_dropping_saved_text() {
+        let mut settings = get_default_settings();
+        settings.quick_paste_slots = vec![QuickPasteSlot {
+            prompt: "keep me".to_string(),
+        }];
+        assert!(ensure_quick_paste_slots(&mut settings));
+        assert_eq!(settings.quick_paste_slots.len(), 3);
+        assert_eq!(settings.quick_paste_slots[0].prompt, "keep me");
+        assert!(settings.quick_paste_slots[1].prompt.is_empty());
+        assert!(!ensure_quick_paste_slots(&mut settings));
     }
 
     #[cfg(not(target_os = "linux"))]

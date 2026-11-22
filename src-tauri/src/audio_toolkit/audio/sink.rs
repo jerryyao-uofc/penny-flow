@@ -91,8 +91,17 @@ pub struct CaptureSink {
     /// counts; readiness is not speech.
     ready: Option<mpsc::Sender<()>>,
     samples: Vec<f32>,
+    /// Every real sample, including frames voice detection dropped. Used only
+    /// when that detection keeps nothing from audio that is clearly sound.
+    raw: Vec<f32>,
+    /// Loudest absolute sample seen. Digital silence stays at zero.
+    peak: f32,
     heard_sound: bool,
 }
+
+/// Louder than a muted or permission-silenced microphone. Below this, a
+/// recording voice detection dropped is silence, not a miss.
+const AUDIBLE_PEAK: f32 = 0.05;
 
 /// Spectrum window at 16 kHz: 32 ms, near the overlay's ~30 Hz refresh.
 const VISUALIZER_WINDOW: usize = 512;
@@ -127,6 +136,8 @@ impl CaptureSink {
             on_audio,
             ready: Some(ready),
             samples: Vec::new(),
+            raw: Vec::new(),
+            peak: 0.0,
             heard_sound: false,
         }
     }
@@ -155,8 +166,18 @@ impl CaptureSink {
                 );
             }
         }
+        let mut samples = self.samples;
+        // Voice detection can drop a whole take of real speech. The model
+        // should still hear that take.
+        if samples.is_empty() && self.peak >= AUDIBLE_PEAK {
+            log::info!(
+                "Voice detection kept no samples from audible audio (peak {:.3}); transcribing the recording",
+                self.peak
+            );
+            samples = self.raw;
+        }
         CapturedAudio {
-            samples: self.samples,
+            samples,
             // `ready` is spent on the first chunk, so `None` means audio came.
             input_silent: self.ready.is_none() && !self.heard_sound,
             vad: self.vad,
@@ -180,6 +201,10 @@ impl Sink for CaptureSink {
 
         // Mono by construction: the recorder mixes down or picks one channel.
         let real = &chunk.samples[..chunk.valid_frames];
+        self.raw.extend_from_slice(real);
+        for sample in real {
+            self.peak = self.peak.max(sample.abs());
+        }
         if let Some(levels) = self.visualizer.feed(real) {
             (self.on_levels)(levels);
         }

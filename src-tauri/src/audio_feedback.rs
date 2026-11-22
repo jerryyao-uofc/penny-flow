@@ -5,11 +5,11 @@ use log::{debug, error, warn};
 use rodio::cpal::traits::HostTrait;
 use rodio::source::{SineWave, Source};
 use rodio::DeviceSinkBuilder;
-use std::time::Duration;
 use std::fs::File;
 use std::io::BufReader;
 use std::path::{Path, PathBuf};
 use std::thread;
+use std::time::Duration;
 use tauri::{AppHandle, Manager};
 
 pub enum SoundType {

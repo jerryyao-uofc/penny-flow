@@ -828,21 +828,87 @@ fn should_send_auto_submit(auto_submit: bool, paste_method: PasteMethod) -> bool
     auto_submit && paste_method != PasteMethod::None
 }
 
-/// Pastes `text` into the focused app. Call from a worker thread, never the main
-/// thread: it sleeps between steps (input injection hops via `with_enigo`).
-pub fn paste(text: String, app_handle: AppHandle) -> Result<(), String> {
-    let _paste = PASTE_LOCK.lock().unwrap_or_else(PoisonError::into_inner);
-    let settings = get_settings(&app_handle);
-    let paste_method = settings.paste_method;
-    let paste_delay_ms = settings.paste_delay_ms;
-    let paste_delay_after_ms = settings.paste_delay_after_ms;
+/// Which transcript-only behaviors a paste applies.
+#[derive(Clone, Copy)]
+struct PastePolicy {
+    /// Honor `append_trailing_space`.
+    trailing_space: bool,
+    /// Honor `auto_submit`.
+    auto_submit: bool,
+    /// Honor `ClipboardHandling::CopyToClipboard`. When false, the previous
+    /// clipboard is always restored.
+    copy_to_clipboard: bool,
+    /// `PasteMethod::None` uses the platform default so the text still inserts.
+    none_uses_default: bool,
+}
 
-    // Append trailing space if setting is enabled
-    let text = if settings.append_trailing_space {
-        format!("{} ", text)
+const TRANSCRIPT_PASTE: PastePolicy = PastePolicy {
+    trailing_space: true,
+    auto_submit: true,
+    copy_to_clipboard: true,
+    none_uses_default: false,
+};
+
+const VERBATIM_PASTE: PastePolicy = PastePolicy {
+    trailing_space: false,
+    auto_submit: false,
+    copy_to_clipboard: false,
+    none_uses_default: true,
+};
+
+fn effective_paste_method(method: PasteMethod, none_uses_default: bool) -> PasteMethod {
+    if none_uses_default && method == PasteMethod::None {
+        PasteMethod::default()
+    } else {
+        method
+    }
+}
+
+fn apply_trailing_space(text: String, requested: bool, setting_enabled: bool) -> String {
+    if requested && setting_enabled {
+        format!("{text} ")
     } else {
         text
-    };
+    }
+}
+
+fn effective_clipboard_handling(
+    handling: ClipboardHandling,
+    honor_copy_to_clipboard: bool,
+) -> ClipboardHandling {
+    if honor_copy_to_clipboard {
+        handling
+    } else {
+        ClipboardHandling::DontModify
+    }
+}
+
+/// Pastes a transcript into the focused app. Honors trailing space, auto-submit,
+/// and copy-to-clipboard. Call from a worker thread, never the main thread:
+/// it sleeps between steps (input injection hops via `with_enigo`).
+pub fn paste(text: String, app_handle: AppHandle) -> Result<(), String> {
+    paste_with(text, app_handle, TRANSCRIPT_PASTE)
+}
+
+/// Inserts `text` exactly as given. No trailing space, no auto-submit Enter,
+/// and the previous clipboard is restored, including when reliable paste is on.
+/// `PasteMethod::None` falls back to the platform default. An external script
+/// still runs when that method is selected. Call from a worker thread.
+pub fn paste_verbatim(text: String, app_handle: AppHandle) -> Result<(), String> {
+    paste_with(text, app_handle, VERBATIM_PASTE)
+}
+
+fn paste_with(text: String, app_handle: AppHandle, policy: PastePolicy) -> Result<(), String> {
+    let _paste = PASTE_LOCK.lock().unwrap_or_else(PoisonError::into_inner);
+    let settings = get_settings(&app_handle);
+    let paste_method = effective_paste_method(settings.paste_method, policy.none_uses_default);
+    let paste_delay_ms = settings.paste_delay_ms;
+    let paste_delay_after_ms = settings.paste_delay_after_ms;
+    let auto_submit = policy.auto_submit && settings.auto_submit;
+    let clipboard_handling =
+        effective_clipboard_handling(settings.clipboard_handling, policy.copy_to_clipboard);
+
+    let text = apply_trailing_space(text, policy.trailing_space, settings.append_trailing_space);
 
     info!(
         "Using paste method: {:?}, delay before: {}ms, delay after: {}ms",
@@ -864,7 +930,7 @@ pub fn paste(text: String, app_handle: AppHandle) -> Result<(), String> {
         }
         PasteMethod::CtrlV | PasteMethod::CtrlShiftV | PasteMethod::ShiftInsert => {
             // Debug-gated receipt-sequenced paste (#502): restore the clipboard
-            // after the target actually reads the transcript, not on a timer.
+            // after the target actually reads the text, not on a timer.
             // On success it fully handles the paste (including auto-submit and
             // clipboard handling) asynchronously; on failure fall through to
             // the legacy path untouched.
@@ -872,20 +938,18 @@ pub fn paste(text: String, app_handle: AppHandle) -> Result<(), String> {
             if settings.reliable_paste {
                 // Runs entirely on the main thread, as it requires.
                 let (text, app) = (text.clone(), app_handle.clone());
-                let (auto_submit, auto_submit_key, clipboard_handling) = (
-                    settings.auto_submit,
-                    settings.auto_submit_key,
-                    settings.clipboard_handling,
-                );
+                let reliable_auto_submit = auto_submit;
+                let reliable_key = settings.auto_submit_key;
+                let reliable_handling = clipboard_handling;
                 let reliable_result = with_enigo(&app_handle, move |enigo| {
                     crate::paste_tx::try_reliable_paste(
                         &text,
                         &app,
                         &paste_method,
                         enigo,
-                        auto_submit,
-                        auto_submit_key,
-                        clipboard_handling,
+                        reliable_auto_submit,
+                        reliable_key,
+                        reliable_handling,
                     )
                 });
                 match reliable_result {
@@ -913,7 +977,7 @@ pub fn paste(text: String, app_handle: AppHandle) -> Result<(), String> {
         }
     }
 
-    if should_send_auto_submit(settings.auto_submit, paste_method) {
+    if should_send_auto_submit(auto_submit, paste_method) {
         std::thread::sleep(Duration::from_millis(50));
         let auto_submit_key = settings.auto_submit_key;
         if let Err(error) = with_enigo(&app_handle, move |enigo| {
@@ -923,8 +987,8 @@ pub fn paste(text: String, app_handle: AppHandle) -> Result<(), String> {
         }
     }
 
-    // After pasting, optionally copy to clipboard based on settings
-    if settings.clipboard_handling == ClipboardHandling::CopyToClipboard {
+    // Transcripts may stay on the clipboard. Verbatim paste always restores.
+    if clipboard_handling == ClipboardHandling::CopyToClipboard {
         write_text_to_clipboard(&app_handle, &text)?;
     }
 
@@ -1030,6 +1094,54 @@ e.g. 28:1 28:0 means pressing on the Enter button on a standard US keyboard.
         assert!(should_send_auto_submit(true, PasteMethod::Direct));
         assert!(should_send_auto_submit(true, PasteMethod::CtrlShiftV));
         assert!(should_send_auto_submit(true, PasteMethod::ShiftInsert));
+    }
+
+    #[test]
+    fn verbatim_paste_falls_back_when_method_is_none_and_keeps_other_methods() {
+        assert_eq!(
+            effective_paste_method(PasteMethod::None, true),
+            PasteMethod::default()
+        );
+        assert_ne!(PasteMethod::default(), PasteMethod::None);
+        assert_eq!(
+            effective_paste_method(PasteMethod::None, false),
+            PasteMethod::None
+        );
+        assert_eq!(
+            effective_paste_method(PasteMethod::ExternalScript, true),
+            PasteMethod::ExternalScript
+        );
+        assert_eq!(
+            effective_paste_method(PasteMethod::Direct, true),
+            PasteMethod::Direct
+        );
+        assert_eq!(
+            effective_paste_method(PasteMethod::CtrlShiftV, true),
+            PasteMethod::CtrlShiftV
+        );
+    }
+
+    #[test]
+    fn verbatim_paste_skips_trailing_space_and_copy_to_clipboard() {
+        assert_eq!(apply_trailing_space("hi".into(), false, true), "hi");
+        assert_eq!(apply_trailing_space("hi".into(), true, true), "hi ");
+        assert_eq!(apply_trailing_space("hi".into(), true, false), "hi");
+        assert_eq!(
+            effective_clipboard_handling(ClipboardHandling::CopyToClipboard, false),
+            ClipboardHandling::DontModify
+        );
+        assert_eq!(
+            effective_clipboard_handling(ClipboardHandling::CopyToClipboard, true),
+            ClipboardHandling::CopyToClipboard
+        );
+        assert!(!VERBATIM_PASTE.trailing_space);
+        assert!(!VERBATIM_PASTE.auto_submit);
+        assert!(!VERBATIM_PASTE.copy_to_clipboard);
+        assert!(VERBATIM_PASTE.none_uses_default);
+        assert!(TRANSCRIPT_PASTE.trailing_space);
+        assert!(TRANSCRIPT_PASTE.auto_submit);
+        assert!(TRANSCRIPT_PASTE.copy_to_clipboard);
+        assert!(!TRANSCRIPT_PASTE.none_uses_default);
     }
 
     #[test]

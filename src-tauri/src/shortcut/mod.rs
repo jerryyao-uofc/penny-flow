@@ -833,7 +833,7 @@ pub fn change_autostart_setting(app: AppHandle, enabled: bool) -> Result<(), Str
 pub fn change_update_checks_setting(app: AppHandle, enabled: bool) -> Result<(), String> {
     if settings::update_checks_forced_disabled() {
         return Err(
-            "Update checks are disabled by system configuration (HANDY_DISABLE_UPDATER)".into(),
+            "Penny Flow does not install upstream Handy updates".into(),
         );
     }
 
@@ -1132,6 +1132,28 @@ pub fn change_text_refine_slot_setting(
             let _ = unregister_shortcut(&app, binding);
         }
     }
+    Ok(())
+}
+
+#[tauri::command]
+#[specta::specta]
+pub fn change_quick_paste_prompt(
+    app: AppHandle,
+    slot_index: u32,
+    prompt: String,
+) -> Result<(), String> {
+    let index = slot_index as usize;
+    if index >= 3 {
+        return Err("Quick paste slot index must be 0, 1, or 2".into());
+    }
+    let mut settings = settings::get_settings(&app);
+    settings::ensure_quick_paste_slots(&mut settings);
+    let slot = settings
+        .quick_paste_slots
+        .get_mut(index)
+        .ok_or_else(|| "Quick paste slot missing".to_string())?;
+    slot.prompt = prompt;
+    settings::write_settings(&app, settings);
     Ok(())
 }
 

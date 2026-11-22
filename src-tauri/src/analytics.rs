@@ -58,7 +58,10 @@ fn is_han_char(ch: char) -> bool {
 
 pub fn word_count(text: &str) -> u64 {
     text.split_whitespace()
-        .filter(|word| word.chars().any(|ch| ch.is_alphanumeric() || is_han_char(ch)))
+        .filter(|word| {
+            word.chars()
+                .any(|ch| ch.is_alphanumeric() || is_han_char(ch))
+        })
         .count() as u64
 }
 

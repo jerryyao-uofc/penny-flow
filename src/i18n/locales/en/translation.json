@@ -359,6 +359,18 @@
           "refine_3": {
             "name": "Text Refine 3",
             "description": "Rewrite the selected text with Text Refine slot 3."
+          },
+          "quick_paste_1": {
+            "name": "Quick Paste 1",
+            "description": "Pastes the text saved in Quick Paste 1 at the cursor."
+          },
+          "quick_paste_2": {
+            "name": "Quick Paste 2",
+            "description": "Pastes the text saved in Quick Paste 2 at the cursor."
+          },
+          "quick_paste_3": {
+            "name": "Quick Paste 3",
+            "description": "Pastes the text saved in Quick Paste 3 at the cursor."
           }
         },
         "errors": {
@@ -377,6 +389,12 @@
         "description": "The languages you speak. Penny Flow uses them to recommend models.",
         "noMatch": "No language matches “{{query}}”",
         "weak": "No model recognizes {{languages}} well yet."
+      },
+      "quickPaste": {
+        "title": "Quick Paste",
+        "description": "Press a hotkey to insert a saved snippet at the cursor. Nothing is recorded and no model is called.",
+        "prompt": "Saved text",
+        "promptHint": "Inserted exactly as written. A blank prompt does nothing."
       },
       "shortcutActivation": {
         "title": "Shortcut Behavior",
@@ -769,7 +787,7 @@
       "updateChecks": {
         "label": "Check for Updates",
         "description": "Automatically check for new versions of Penny Flow",
-        "lockedDescription": "Disabled by system configuration (HANDY_DISABLE_UPDATER)"
+        "lockedDescription": "Penny Flow does not install upstream Handy releases."
       },
       "whatsNewPreview": {
         "title": "Preview What's New",
@@ -960,7 +978,7 @@
     "micPermissionDenied": {
       "generic": "Microphone access was denied by the operating system. Please grant microphone permission in your system settings.",
       "windows": "Enable microphone access in Settings → Privacy & security → Microphone (including desktop app access).",
-      "macos": "Grant microphone access in System Settings → Privacy & Security → Microphone.",
+      "macos": "Penny Flow is not receiving the microphone. In System Settings → Privacy & Security → Microphone, toggle Penny Flow off, then on.",
       "linux": "Grant microphone access in your system's sound or privacy settings."
     },
     "noInputDeviceTitle": "No Microphone Found",

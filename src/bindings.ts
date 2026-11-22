@@ -240,6 +240,14 @@ async changeTextRefineSlotSetting(slotIndex: number, enabled: boolean | null, na
     else return { status: "error", error: e  as any };
 }
 },
+async changeQuickPastePrompt(slotIndex: number, prompt: string) : Promise<Result<null, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("change_quick_paste_prompt", { slotIndex, prompt }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
 async changeExperimentalEnabledSetting(enabled: boolean) : Promise<Result<null, string>> {
     try {
     return { status: "ok", data: await TAURI_INVOKE("change_experimental_enabled_setting", { enabled }) };
@@ -1112,7 +1120,11 @@ overlay_style?: OverlayStyle;
 /**
  * Three Text Refine slots (enable, name, prompt). Hotkeys are refine_1/2/3.
  */
-text_refine_slots?: TextRefineSlot[] }
+text_refine_slots?: TextRefineSlot[]; 
+/**
+ * Three canned strings pasted by quick_paste_1/2/3. Empty prompts are a no-op.
+ */
+quick_paste_slots?: QuickPasteSlot[] }
 export type AudioDevice = { index: string; name: string; is_default: boolean }
 export type DictationAnalytics = { total_uses: number; words_transcribed: number; chinese_characters: number; deepseek_rewrites: number; text_refine_uses: number; active_days: number; words_this_week: number }
 export type AutoSubmitKey = "enter" | "ctrl_enter" | "cmd_enter"
@@ -1161,6 +1173,11 @@ key_down: number; key_up: number; flags_changed: number; mouse: number; duration
 export type KeyboardImplementation = "tauri" | "handy_keys"
 export type LLMPrompt = { id: string; name: string; prompt: string }
 export type TextRefineSlot = { enabled: boolean; name: string; prompt: string }
+/**
+ * Saved text inserted verbatim by a quick-paste hotkey.
+ * An empty or whitespace-only prompt does nothing; the hotkey stays registered.
+ */
+export type QuickPasteSlot = { prompt: string }
 export type LogLevel = "trace" | "debug" | "info" | "warn" | "error"
 export type ModelInfo = { id: string; name: string; description: string; filename: string; source: ModelSource; size_mb: number; is_downloaded: boolean; is_downloading: boolean; partial_size: number; accuracy_score: number; speed_score: number; supports_translation: boolean; is_recommended: boolean; supported_languages: string[]; supports_language_selection: boolean; is_custom: boolean; supports_streaming: boolean; supports_language_detection: boolean }
 export type ModelLoadStatus = { is_loaded: boolean; current_model: string | null }

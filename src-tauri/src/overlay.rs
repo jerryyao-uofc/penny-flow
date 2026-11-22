@@ -596,7 +596,8 @@ pub fn create_presence_mark(app_handle: &AppHandle) {
 /// Flat bar above the transcription banner. Stays visible for the whole run.
 #[cfg(target_os = "macos")]
 pub fn create_presence_mark(app_handle: &AppHandle) {
-    let (x, y) = calculate_presence_position(app_handle, PRESENCE_PILL_HEIGHT).unwrap_or((0.0, 0.0));
+    let (x, y) =
+        calculate_presence_position(app_handle, PRESENCE_PILL_HEIGHT).unwrap_or((0.0, 0.0));
     match PanelBuilder::<_, RecordingOverlayPanel>::new(app_handle, "presence_mark")
         .url(WebviewUrl::App("src/overlay/index.html".into()))
         .title("Penny Flow")
@@ -612,12 +613,15 @@ pub fn create_presence_mark(app_handle: &AppHandle) {
         .corner_radius(5.0)
         .style_mask(StyleMask::empty().borderless().nonactivating_panel())
         .with_window(|w| {
-            w.decorations(false).transparent(true).focusable(false).effects(
-                tauri::window::EffectsBuilder::new()
-                    .effect(tauri::window::Effect::HudWindow)
-                    .radius(5.0)
-                    .build(),
-            )
+            w.decorations(false)
+                .transparent(true)
+                .focusable(false)
+                .effects(
+                    tauri::window::EffectsBuilder::new()
+                        .effect(tauri::window::Effect::HudWindow)
+                        .radius(5.0)
+                        .build(),
+                )
         })
         .collection_behavior(
             CollectionBehavior::new()
@@ -870,8 +874,7 @@ pub fn hide_recording_overlay(app_handle: &AppHandle) {
             }
             let _ = window_clone.hide();
             let app = app_for_presence.clone();
-            let _ = app_for_presence
-                .run_on_main_thread(move || place_presence_mark_on_main(&app));
+            let _ = app_for_presence.run_on_main_thread(move || place_presence_mark_on_main(&app));
         });
     }
 }

@@ -374,7 +374,6 @@ async fn rewrite_text_with_provider(
     deepseek_signaled: &mut bool,
     deepseek_succeeded: &mut bool,
 ) -> Option<String> {
-
     // Ask these providers to skip reasoning/thinking — post-processing rarely
     // benefits from it and it adds seconds of latency. llm_client picks the
     // field the endpoint understands and retries without it if rejected.
@@ -540,8 +539,7 @@ async fn rewrite_text_with_provider(
         .await
     };
 
-    match completion
-    {
+    match completion {
         Ok(Some(content)) => {
             let content = strip_invisible_chars(strip_think_block(&content));
             debug!(
@@ -903,6 +901,16 @@ impl ShortcutAction for TranscribeAction {
                     tm.cancel_stream();
                     utils::hide_recording_overlay(&ah);
                     set_tray_state(&ah, TrayIconState::Idle);
+                    if input_silent {
+                        warn!("Microphone delivered silence; transcription has nothing to hear");
+                        let _ = ah.emit(
+                            "recording-error",
+                            RecordingErrorEvent {
+                                error_type: "microphone_permission_denied".to_string(),
+                                detail: None,
+                            },
+                        );
+                    }
                     emit_transcription_complete(&ah, empty_outcome(input_silent), 0, stop_time);
                 } else {
                     // Save WAV concurrently with transcription
@@ -1301,6 +1309,63 @@ impl ShortcutAction for TestAction {
     }
 }
 
+/// Insert a saved string at the cursor. No microphone, overlay, model, or history.
+struct QuickPasteAction {
+    slot: usize,
+}
+
+fn quick_paste_blocked(app: &AppHandle) -> bool {
+    let recording = app
+        .try_state::<Arc<AudioRecordingManager>>()
+        .is_some_and(|audio| audio.is_recording());
+    let transcribing = app
+        .try_state::<Arc<TranscriptionManager>>()
+        .is_some_and(|manager| manager.job_active());
+    // Tray busy also covers a live dictation that has stopped recording and is
+    // still transcribing or pasting. File jobs set `job_active` without that.
+    recording || transcribing || crate::tray::dictation_in_progress(app)
+}
+
+impl ShortcutAction for QuickPasteAction {
+    fn start(&self, app: &AppHandle, _binding_id: &str, _shortcut_str: &str) {
+        if quick_paste_blocked(app) {
+            debug!("Quick paste ignored while recording or transcribing");
+            return;
+        }
+        let slot = self.slot;
+        let app = app.clone();
+        if let Err(e) = std::thread::Builder::new()
+            .name(format!("quick-paste-{slot}"))
+            .spawn(move || {
+                let settings = get_settings(&app);
+                let Some(raw) = settings
+                    .quick_paste_slots
+                    .get(slot)
+                    .map(|slot| slot.prompt.clone())
+                else {
+                    debug!("Quick paste slot {slot} missing");
+                    return;
+                };
+                if raw.trim().is_empty() {
+                    debug!("Quick paste slot {slot} is empty");
+                    return;
+                }
+                if quick_paste_blocked(&app) {
+                    debug!("Quick paste ignored while recording or transcribing");
+                    return;
+                }
+                if let Err(e) = utils::paste_verbatim(raw, app) {
+                    error!("Quick paste failed: {e}");
+                }
+            })
+        {
+            error!("Failed to start quick paste thread: {e}");
+        }
+    }
+
+    fn stop(&self, _app: &AppHandle, _binding_id: &str, _shortcut_str: &str) {}
+}
+
 // Static Action Map
 pub static ACTION_MAP: Lazy<HashMap<String, Arc<dyn ShortcutAction>>> = Lazy::new(|| {
     let mut map = HashMap::new();
@@ -1334,14 +1399,27 @@ pub static ACTION_MAP: Lazy<HashMap<String, Arc<dyn ShortcutAction>>> = Lazy::ne
         "refine_3".to_string(),
         Arc::new(RefineAction { slot: 2 }) as Arc<dyn ShortcutAction>,
     );
+    map.insert(
+        "quick_paste_1".to_string(),
+        Arc::new(QuickPasteAction { slot: 0 }) as Arc<dyn ShortcutAction>,
+    );
+    map.insert(
+        "quick_paste_2".to_string(),
+        Arc::new(QuickPasteAction { slot: 1 }) as Arc<dyn ShortcutAction>,
+    );
+    map.insert(
+        "quick_paste_3".to_string(),
+        Arc::new(QuickPasteAction { slot: 2 }) as Arc<dyn ShortcutAction>,
+    );
     map
 });
 
 #[cfg(test)]
 mod tests {
     use super::{
-        complete_unless_cancelled, is_blank_transcription, should_use_streaming_overlay,
-        han_char_count, strip_think_block, transcription_needs_post_process, word_count,
+        complete_unless_cancelled, han_char_count, is_blank_transcription,
+        should_use_streaming_overlay, strip_think_block, transcription_needs_post_process,
+        word_count,
     };
     use crate::settings::OverlayStyle;
     use std::future;

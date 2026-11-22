@@ -18,6 +18,13 @@ type OverlayState = "recording" | "streaming" | "transcribing" | "processing";
 // Number of reactive bars in the waveform (the simple, smoothed style shared by
 // every overlay form). Mic levels arrive as 16 FFT buckets; we take the first N.
 const WAVE_BARS = 9;
+// Resting bar vs full-speech bar. 26px still sits inside the 40px control row
+// (--ov-base-h) with a few pixels of air, so a peak doesn't clip the pill.
+// The curve (was 0.7 into an 18px cap) holds near-silence near the floor and
+// lets speaking levels use the extra height.
+const WAVE_MIN_PX = 3;
+const WAVE_MAX_PX = 26;
+const WAVE_CURVE = 0.85;
 
 // Only call out a model load in the Live preview once it has run this long.
 // Warm loads finish in well under this (~0.2s on Apple Silicon, ~1.5s on a
@@ -148,10 +155,13 @@ const RecordingOverlay: React.FC = () => {
       const unlistenLevel = await listen<number[]>("mic-level", (event) => {
         const newLevels = event.payload as number[];
         // Exponential smoothing across the 16 buckets, then take the first N
-        // bars for the shared waveform.
+        // bars for the shared waveform. Rise faster than fall so a syllable
+        // reaches the taller bars before it ends; a quiet target still
+        // settles to the floor instead of twitching.
         const smoothed = smoothedLevelsRef.current.map((prev, i) => {
           const target = newLevels[i] || 0;
-          return prev * 0.7 + target * 0.3;
+          const follow = target > prev ? 0.45 : 0.34;
+          return prev * (1 - follow) + target * follow;
         });
         smoothedLevelsRef.current = smoothed;
         setLevels(smoothed.slice(0, WAVE_BARS));
@@ -262,7 +272,11 @@ const RecordingOverlay: React.FC = () => {
         <i
           key={i}
           style={{
-            height: `${Math.max(3, Math.min(18, 3 + Math.pow(v, 0.7) * 15))}px`,
+            height: `${
+              WAVE_MIN_PX +
+              Math.pow(Math.min(1, Math.max(0, v)), WAVE_CURVE) *
+                (WAVE_MAX_PX - WAVE_MIN_PX)
+            }px`,
           }}
         />
       ))}
